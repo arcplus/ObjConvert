@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <RootNamespace>Arctron.Obj23dTiles</RootNamespace>
+    <Company>Arcplus</Company>
+    <Authors>Arctron</Authors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <AssemblyName>Arctron.Obj23dTiles</AssemblyName>
+    <PackageTags>obj 3dtiles</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
+    <AssemblyTitle>Obj23dTiles</AssemblyTitle>
+    <DefineConstants>$(AdditionalConstants)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <AssemblyTitle>Obj23dTiles .NET Standard 2.0</AssemblyTitle>
+    <DefineConstants>$(AdditionalConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obj2Gltf\Obj2Gltf.csproj" />
+  </ItemGroup>
+
+</Project>
