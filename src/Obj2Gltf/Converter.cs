@@ -143,34 +143,7 @@ namespace Arctron.Obj2Gltf
 
         private bool RequiresUint32Indices(ObjModel objModel)
         {
-            return objModel.Vertices.Count > 65534;
-
-            var list = new List<int>();            
-            foreach (var g in objModel.Geometries)
-            {                
-                foreach(var f in g.Faces)
-                {
-                    foreach(var t in f.Triangles)
-                    {
-                        if (!list.Contains(t.V1.V))
-                        {
-                            list.Add(t.V1.V);
-                        }
-                        if (!list.Contains(t.V2.V))
-                        {
-                            list.Add(t.V2.V);
-                        }
-                        if (!list.Contains(t.V3.V))
-                        {
-                            list.Add(t.V3.V);
-                        }
-                    }
-                }
-                var count = list.Count;
-                list.Clear();
-                if (count > 65534) return true;
-            }
-            return false;
+            return objModel.Vertices.Count > 65534;            
         }
 
         #region Buffers
