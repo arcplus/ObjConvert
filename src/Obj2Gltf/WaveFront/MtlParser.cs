@@ -14,7 +14,10 @@ namespace Arctron.Obj2Gltf.WaveFront
         private readonly string _parentFolder;
 
         private List<Material> _mats = new List<Material>();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mtlFile">material file</param>
         public MtlParser(string mtlFile)
         {
             _mtlFile = mtlFile;
@@ -57,7 +60,10 @@ namespace Arctron.Obj2Gltf.WaveFront
             }
             return d;
         }
-
+        /// <summary>
+        /// get all mats in mtl file
+        /// </summary>
+        /// <returns></returns>
         public ICollection<Material> GetMats()
         {
             if (_mats.Count == 0)

@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Arctron.Gltf
 {
+    /// <summary>
+    /// Specifies whether an attribute, vector, or matrix.
+    /// </summary>
     public enum AccessorType
     {
         /// Scalar quantity.
@@ -27,7 +30,9 @@ namespace Arctron.Gltf
         /// 4x4 matrix.
         MAT4
     }
-
+    /// <summary>
+    /// The component data type.
+    /// </summary>
     public enum ComponentType
     {
         /// Corresponds to `GL_BYTE`.

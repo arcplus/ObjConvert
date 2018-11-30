@@ -7,16 +7,29 @@ using System.Linq;
 
 namespace Arctron.Obj23dTiles
 {
+    /// <summary>
+    /// represents a tileset.json file
+    /// </summary>
     public class SingleTileset
-    {        
+    {       
+        /// <summary>
+        ///  asset
+        /// </summary>
         [JsonProperty("asset")]
         public TilesetAsset Asset { get; set; }
-
+        /// <summary>
+        /// additional properties
+        /// </summary>
         [JsonProperty("properties")]
         public Dictionary<string, object> Properties { get; set; }
-
+        /// <summary>
+        /// geometric errors
+        /// </summary>
         [JsonProperty("geometricError")]
         public double GeometricError { get; set; } = 200.0;
+        /// <summary>
+        /// tile root (tileset.json or b3dm file)
+        /// </summary>
         [JsonProperty("root")]
         public Tile Root { get; set; }
 
@@ -29,7 +42,11 @@ namespace Arctron.Obj23dTiles
             }
             Root.ResetGeometricErrors(factor);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options">options obtained when convert b3dm data</param>
+        /// <returns></returns>
         public static SingleTileset Create(TilesetCreationOptions options)
         {
             if (options == null) options = new TilesetCreationOptions();
@@ -123,20 +140,39 @@ namespace Arctron.Obj23dTiles
 
 
     }
-
+    /// <summary>
+    /// tile data model
+    /// </summary>
     public class Tile
     {
+        /// <summary>
+        /// geo transform
+        /// </summary>
         [JsonProperty("transform")]
         public double[] Transform { get; set; }
+        /// <summary>
+        /// bounding
+        /// </summary>
         [JsonProperty("boundingVolume")]
         public BoundingVolume BoundingVolume { get; set; }
+        /// <summary>
+        /// geo error
+        /// </summary>
         [JsonProperty("geometricError")]
         public double GeometricError { get; set; }
+        /// <summary>
+        /// ADD or REPLACE
+        /// </summary>
         [JsonProperty("refine")]
         public string Refine { get; set; } // "ADD"
-
+        /// <summary>
+        /// tileset.json or b3dm file
+        /// </summary>
         [JsonProperty("content")]
         public TileContent Content { get; set; }
+        /// <summary>
+        /// children tiles
+        /// </summary>
         [JsonProperty("children")]
         public List<Tile> Children { get; set; }
         [JsonIgnore]
@@ -170,35 +206,65 @@ namespace Arctron.Obj23dTiles
             return x + y + z;
         }
     }
-
+    /// <summary>
+    /// tile data
+    /// </summary>
     public class TileContent
     {
+        /// <summary>
+        /// bounding
+        /// </summary>
         [JsonProperty("boundingVolume")]
         public BoundingVolume BoundingVolume { get; set; }
+        /// <summary>
+        /// tileset.json or b3dm file
+        /// </summary>
 
         [JsonProperty("url")]
         public string Url { get; set; }        
     }
-
+    /// <summary>
+    /// asset definition
+    /// </summary>
     public class TilesetAsset
     {
+        /// <summary>
+        /// asset version
+        /// </summary>
         [JsonProperty("version")]
         public string Version { get; set; } = "0.0";
+        /// <summary>
+        /// TilesetVersion
+        /// </summary>
         [JsonProperty("tilesetVersion")]
         public string TilesetVersion { get; set; } = "1.0.0-arctron";
+        /// <summary>
+        /// Up axis, Y or Z
+        /// </summary>
         [JsonProperty("gltfUpAxis")]
         public string GltfUpAxis { get; set; } = "Y";
         
     }
-
+    /// <summary>
+    ///  bounding
+    /// </summary>
     public class BoundingVolume
     {
+        /// <summary>
+        /// use region (west, south, east, north, minHeight, maxHeight)
+        /// </summary>
         [JsonProperty("region")]
-        public double[] Region { get; set; } // 6
+        public double[] Region { get; set; }
+        /// <summary>
+        /// bounding box, 12
+        /// </summary>
         [JsonProperty("box")]
-        public double[] Box { get; set; } // 12
+        public double[] Box { get; set; }
+        /// <summary>
+        /// bounding sphere, 4
+        /// </summary>
         [JsonProperty("sphere")]
-        public double[] Sphere { get; set; } // 4
+        public double[] Sphere { get; set; }
     }
 
     public class TilesetRegionComparer : Comparer<SingleTileset>

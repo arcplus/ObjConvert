@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Arctron.Obj23dTiles
 {
+    /// <summary>
+    /// b3dm file format model
+    /// </summary>
     public class B3dm
     {
         internal const int Version = 1;
@@ -11,12 +14,19 @@ namespace Arctron.Obj23dTiles
         internal const int HeaderByteLength = 28;
 
         private readonly List<byte> _glb;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="glb">binary gltf model</param>
         public B3dm(List<byte> glb)
         {
             _glb = glb;
         }
-
+        /// <summary>
+        /// convert to b3dm binary data
+        /// </summary>
+        /// <param name="options">converting options</param>
+        /// <returns></returns>
         public byte[] Convert(Options options)
         {
             if (options == null) options = new Options();

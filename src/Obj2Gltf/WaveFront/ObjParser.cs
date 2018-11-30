@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Arctron.Obj2Gltf.WaveFront
 {
+    /// <summary>
+    /// parse obj file with mat file
+    /// </summary>
     public class ObjParser : IDisposable
     {
         private readonly string _objFile;
@@ -12,7 +15,10 @@ namespace Arctron.Obj2Gltf.WaveFront
         private readonly StreamReader _reader;
         private ObjModel _model = null;
         
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objFile">obj file path</param>
         public ObjParser(string objFile)
         {
             _objFile = objFile;
@@ -79,7 +85,10 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             return line.StartsWith(str+" ") || line.StartsWith(str+"\t");
         }
-
+        /// <summary>
+        /// get parsed obj model
+        /// </summary>
+        /// <returns></returns>
         public ObjModel GetModel()
         {
             if(_model == null)

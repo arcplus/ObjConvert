@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace Arctron.Obj2Gltf
 {
-
+    /// <summary>
+    /// 2-d point or vector
+    /// </summary>
     public struct Vec2
     {
         public Vec2(double u, double v)
@@ -28,7 +30,9 @@ namespace Arctron.Obj2Gltf
             return BitConverter.GetBytes((float)U).Concat(BitConverter.GetBytes((float)V)).ToArray();
         }
     }
-
+    /// <summary>
+    /// 3-d point or verctor
+    /// </summary>
     public struct Vec3
     {
         public Vec3(double xyz) : this(xyz, xyz, xyz) { }
@@ -110,7 +114,9 @@ namespace Arctron.Obj2Gltf
             return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
         }
     }
-
+    /// <summary>
+    /// a bounding box with min and max points
+    /// </summary>
     public class MinMax
     {
         public MinMax()

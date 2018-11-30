@@ -5,16 +5,30 @@ using Newtonsoft.Json;
 
 namespace Arctron.Gltf
 {
+    /// <summary>
+    /// A texture and its sampler.
+    /// </summary>
     public class Texture
     {
+        /// <summary>
+        /// Optional user-defined name for this object.
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
+        /// <summary>
+        /// The index of the sampler used by this texture.
+        /// </summary>
         [JsonProperty("sampler")]
         public int Sampler { get; set; }
+        /// <summary>
+        /// The index of the image used by this texture.
+        /// </summary>
         [JsonProperty("source")]
         public int Source { get; set; }
     }
-
+    /// <summary>
+    /// Reference to a `Texture`.
+    /// </summary>
     public class Info
     {
         /// <summary>
@@ -23,7 +37,9 @@ namespace Arctron.Gltf
         [JsonProperty("index")]
         public int Index { get; set; }
     }
-
+    /// <summary>
+    /// Minification filter.
+    /// </summary>
     public enum MinFilter
     {
         /// Corresponds to `GL_NEAREST`.
@@ -44,7 +60,9 @@ namespace Arctron.Gltf
         /// Corresponds to `GL_LINEAR_MIPMAP_LINEAR`.
         LinearMipmapLinear,
     }
-
+    /// <summary>
+    /// Magnification filter.
+    /// </summary>
     public enum MagFilter
     {
         /// Corresponds to `GL_NEAREST`.
@@ -53,19 +71,40 @@ namespace Arctron.Gltf
         /// Corresponds to `GL_LINEAR`.
         Linear,
     }
-
+    /// <summary>
+    /// Texture sampler properties for filtering and wrapping modes.
+    /// </summary>
     public class Sampler
     {
+        /// <summary>
+        /// Optional user-defined name for this object.
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        /// <summary>
+        /// Magnification filter.
+        /// </summary>
         [JsonProperty("magFilter")]
         public MagFilter MagFilter { get; set; }
+        /// <summary>
+        /// Minification filter.
+        /// </summary>
         [JsonProperty("minFilter")]
         public MinFilter MinFilter { get; set; }
+        /// <summary>
+        /// `s` wrapping mode.
+        /// </summary>
         [JsonProperty("wrapS")]
         public WrappingMode WrapS { get; set; }
+        /// <summary>
+        /// `t` wrapping mode.
+        /// </summary>
         [JsonProperty("wrapT")]
         public WrappingMode WrapT { get; set; }
     }
-
+    /// <summary>
+    /// Texture co-ordinate wrapping mode.
+    /// </summary>
     public enum WrappingMode
     {
         /// Corresponds to `GL_CLAMP_TO_EDGE`.

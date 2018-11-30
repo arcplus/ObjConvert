@@ -4,6 +4,9 @@ using Newtonsoft.Json;
 
 namespace Arctron.Obj23dTiles
 {
+    /// <summary>
+    /// Gis Position
+    /// </summary>
     public class GisPosition
     {
         public GisPosition() { }
@@ -36,40 +39,44 @@ namespace Arctron.Obj23dTiles
         public double? TransHeight { get; set; }
     }
 
-    public class TilesetOptions
-    {
-        /// <summary>
-        /// Tile origin's(models' point (0,0,0)) longitude in radian.
-        /// </summary>
-        [JsonProperty("longitude")]
-        public double Longitude { get; set; }
-        /// <summary>
-        /// Tile origin's latitude in radian.
-        /// </summary>
-        [JsonProperty("latitude")]
-        public double Latitude { get; set; }
-        /// <summary>
-        /// Tile origin's height in meters.
-        /// </summary>
-        [JsonProperty("transHeight")]
-        public double TransHeight { get; set; }
-        /// <summary>
-        /// Using region bounding volume.
-        /// </summary>
-        [JsonProperty("region")]
-        public bool UseRegion { get; set; } = true;
-        /// <summary>
-        /// Using box bounding volume.
-        /// </summary>
-        [JsonProperty("box")]
-        public bool UseBox { get; set; }
-        /// <summary>
-        /// Using sphere bounding volume.
-        /// </summary>
-        [JsonProperty("sphere")]
-        public bool UseSphere { get; set; }
-    }
+    //public class TilesetOptions
+    //{
+    //    /// <summary>
+    //    /// Tile origin's(models' point (0,0,0)) longitude in radian.
+    //    /// </summary>
+    //    [JsonProperty("longitude")]
+    //    public double Longitude { get; set; }
+    //    /// <summary>
+    //    /// Tile origin's latitude in radian.
+    //    /// </summary>
+    //    [JsonProperty("latitude")]
+    //    public double Latitude { get; set; }
+    //    /// <summary>
+    //    /// Tile origin's height in meters.
+    //    /// </summary>
+    //    [JsonProperty("transHeight")]
+    //    public double TransHeight { get; set; }
+    //    /// <summary>
+    //    /// Using region bounding volume.
+    //    /// </summary>
+    //    [JsonProperty("region")]
+    //    public bool UseRegion { get; set; } = true;
+    //    /// <summary>
+    //    /// Using box bounding volume.
+    //    /// </summary>
+    //    [JsonProperty("box")]
+    //    public bool UseBox { get; set; }
+    //    /// <summary>
+    //    /// Using sphere bounding volume.
+    //    /// </summary>
+    //    [JsonProperty("sphere")]
+    //    public bool UseSphere { get; set; }
+    //}
 
+    
+    /// <summary>
+    /// generated when convert b3dm data
+    /// </summary>
     public class TilesetCreationOptions
     {
         /// <summary>
@@ -102,7 +109,9 @@ namespace Arctron.Obj23dTiles
         /// </summary>
         [JsonProperty("tileWidth")]
         public double TileWidth { get; set; } = 200.0;
-
+        /// <summary>
+        /// The vertical length (cross latitude) of tile.
+        /// </summary>
         [JsonProperty("tileHeight")]
         public double TileHeight { get; set; } = 200.0;
         /// <summary>

@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 
 namespace Arctron.Obj2Gltf
 {
+    /// <summary>
+    /// obj2gltf converter
+    /// </summary>
     public class Converter
     {
         private readonly ObjParser _objParser;
@@ -16,7 +19,12 @@ namespace Arctron.Obj2Gltf
         private readonly string _name;
         private readonly bool _binary;
         private readonly bool _withBatchTable;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objFile">obj file path</param>
+        /// <param name="binary">whether generate glb</param>
+        /// <param name="withBatchTable"> whether generate batch table</param>
         public Converter(string objFile, bool binary, bool withBatchTable = false)
         {
             _objParser = new ObjParser(objFile);
@@ -30,7 +38,10 @@ namespace Arctron.Obj2Gltf
         private GltfModel _model;
         private List<byte> _glb;
         private readonly BufferState _buffers;
-
+        /// <summary>
+        /// write converted data to file
+        /// </summary>
+        /// <param name="outputFile"></param>
         public void WriteFile(string outputFile)
         {
             if (_model == null)
@@ -47,25 +58,36 @@ namespace Arctron.Obj2Gltf
                 File.WriteAllBytes(outputFile, _glb.ToArray());
             }
         }
-
+        /// <summary>
+        /// get converted model
+        /// </summary>
+        /// <returns></returns>
         public GltfModel GetModel()
         {
             if (_model == null) Run();
             return _model;
         }
-
+        /// <summary>
+        /// get converted binary model
+        /// </summary>
+        /// <returns></returns>
         public List<byte> GetGlb()
         {
             if (_model == null) Run();
             return _glb;
         }
-
+        /// <summary>
+        /// get batch table if batch table enabled
+        /// </summary>
+        /// <returns></returns>
         public BatchTable GetBatchTable()
         {
             if (_model == null) Run();
             return _buffers.BatchTableJson;
         }
-
+        /// <summary>
+        /// run converter
+        /// </summary>
         public void Run()
         {
             if (_model == null)
@@ -191,7 +213,7 @@ namespace Arctron.Obj2Gltf
 
         }
         /// <summary>
-        /// 
+        /// padding json buffer
         /// </summary>
         /// <param name="model"></param>
         /// <param name="boundary"></param>
@@ -252,7 +274,11 @@ namespace Arctron.Obj2Gltf
             }
             return bytes.ToArray();
         }
-        
+        /// <summary>
+        /// padding buffers with boundary
+        /// </summary>
+        /// <param name="buffers"></param>
+        /// <param name="boundary"></param>
         public static void PaddingBuffers(List<byte> buffers, int boundary = 4)
         {
             var length = buffers.Count;
@@ -517,7 +543,11 @@ namespace Arctron.Obj2Gltf
 
         }
 
-        
+        /// <summary>
+        /// update bounding box with double array
+        /// </summary>
+        /// <param name="vs"></param>
+        /// <param name="minMax"></param>
 
         public static void UpdateMinMax(double[] vs, MinMax minMax)
         {

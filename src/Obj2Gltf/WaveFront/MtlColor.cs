@@ -2,21 +2,39 @@
 using System.Collections.Generic;
 using System.Text;
 
+//http://paulbourke.net/dataformats/mtl/
+
 namespace Arctron.Obj2Gltf.WaveFront
 {
-    //http://paulbourke.net/dataformats/mtl/
+    
+    /// <summary>
+    /// mtl material
+    /// </summary>
     public class Material
     {
+        /// <summary>
+        ///  matname
+        /// </summary>
         public string Name { get; set; }
-
-        public Reflectivity Ambient { get; set; } // Ka
-
-        public Reflectivity Diffuse { get; set; } // Kd
-
-        public string DiffuseTextureFile { get; set; } // map_Kd
-
-        public string AmbientTextureFile { get; set; } // map_Ka
-
+        /// <summary>
+        /// Ka: Ambient Color
+        /// </summary>
+        public Reflectivity Ambient { get; set; }
+        /// <summary>
+        /// Kd: Diffuse Color
+        /// </summary>
+        public Reflectivity Diffuse { get; set; }
+        /// <summary>
+        /// map_Kd: Diffuse texture file path
+        /// </summary>
+        public string DiffuseTextureFile { get; set; }
+        /// <summary>
+        /// map_Ka: Ambient texture file path
+        /// </summary>
+        public string AmbientTextureFile { get; set; }
+        /// <summary>
+        /// specular reflectivity of the current material
+        /// </summary>
         public Reflectivity Specular { get; set; }
         /// <summary>
         /// transmission filter: Any light passing through the object 
@@ -27,7 +45,9 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// illum illum_# 0 ~ 10
         /// </summary>
         public int? Illumination { get; set; }
-
+        /// <summary>
+        /// he dissolve for the current material.
+        /// </summary>
         public Dissolve Dissolve { get; set; }
         /// <summary>
         /// Ns exponent 0 ~ 1000
@@ -176,6 +196,10 @@ namespace Arctron.Obj2Gltf.WaveFront
     }
     /// <summary>
     /// 1- transparency
+    /// "factor" is the amount this material dissolves into the background.  A 
+    ///  factor of 1.0 is fully opaque.This is the default when a new material 
+    /// is created.A factor of 0.0 is fully dissolved(completely
+    /// transparent).
     /// </summary>
     public class Dissolve
     {
@@ -183,7 +207,10 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// A factor of 1.0 is fully opaque.
         /// </summary>
         public double Factor { get; set; }
-
+        /// <summary>
+        /// d -halo 0.0, will be fully dissolved at its center and will 
+        /// appear gradually more opaque toward its edge.
+        /// </summary>
         public bool Halo { get; set; }
 
         public override string ToString()

@@ -5,11 +5,23 @@ using System.IO;
 
 namespace Arctron.Obj2Gltf.WaveFront
 {
+    /// <summary>
+    /// face with material
+    /// </summary>
     public class Face
     {
+        /// <summary>
+        /// face used material name
+        /// </summary>
         public string MatName { get; set; }
+        /// <summary>
+        /// face meshes
+        /// </summary>
         public List<FaceTriangle> Triangles { get; set; } = new List<FaceTriangle>();
-
+        /// <summary>
+        /// write face info into obj file writer
+        /// </summary>
+        /// <param name="writer"></param>
         public void Write(StreamWriter writer)
         {
             if (!String.IsNullOrEmpty(MatName))
@@ -22,18 +34,34 @@ namespace Arctron.Obj2Gltf.WaveFront
             writer.Flush();
         }
     }
-
+    /// <summary>
+    /// represents a triangle
+    /// </summary>
     public struct FaceTriangle
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="v3"></param>
         public FaceTriangle(FaceVertex v1, FaceVertex v2, FaceVertex v3)
         {
             V1 = v1;
             V2 = v2;
             V3 = v3;
         }
+        /// <summary>
+        /// The first vertex
+        /// </summary>
         public FaceVertex V1;
-
+        /// <summary>
+        /// The second vertex
+        /// </summary>
         public FaceVertex V2;
+        /// <summary>
+        /// The third vertex
+        /// </summary>
 
         public FaceVertex V3;
 
@@ -43,12 +71,27 @@ namespace Arctron.Obj2Gltf.WaveFront
         }
     }
     /// <summary>
-    /// 三角面的顶点设置
+    /// represents a vertex on a face
     /// </summary>
     public struct FaceVertex : IEquatable<FaceVertex>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v">vertex coordinates index</param>
         public FaceVertex(int v) : this(v, 0, 0) { }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v">vertex coordinates index</param>
+        /// <param name="n">vertex normal index</param>
         public FaceVertex(int v, int n) : this(v, 0, n) { }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v">vertex coordinates index</param>
+        /// <param name="t">vertex texture coordinates index</param>
+        /// <param name="n">vertex normal index</param>
         public FaceVertex(int v, int t, int n)
         {
             V = v;
@@ -56,15 +99,15 @@ namespace Arctron.Obj2Gltf.WaveFront
             T = t;
         }
         /// <summary>
-        /// 顶点编号
+        /// vertex coordinates index
         /// </summary>
         public int V;
         /// <summary>
-        /// 纹理坐标编号
+        /// vertex texture coordinates index
         /// </summary>
         public int T;
         /// <summary>
-        /// 法向编号
+        /// vertex normal index
         /// </summary>
         public int N;
 

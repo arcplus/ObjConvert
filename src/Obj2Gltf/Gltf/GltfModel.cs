@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 
 namespace Arctron.Gltf
 {
+    /// <summary>
+    /// gltf json model
+    /// </summary>
     public class GltfModel
     {
         [JsonProperty("accessors")]
@@ -32,7 +35,11 @@ namespace Arctron.Gltf
         [JsonProperty("textures")]
         public List<Texture> Textures { get; set; } = new List<Texture>();
 
-
+        /// <summary>
+        /// Load gltf json file
+        /// </summary>
+        /// <param name="filePath">gltf file path</param>
+        /// <returns></returns>
         public static GltfModel LoadFromJsonFile(string filePath)
         {
             var s = System.IO.File.ReadAllText(filePath, Encoding.UTF8);

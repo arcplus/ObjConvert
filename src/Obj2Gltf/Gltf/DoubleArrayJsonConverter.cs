@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 
 namespace Arctron.Gltf
 {
+    /// <summary>
+    /// Convert to int[] when all values are equals integers
+    /// </summary>
     public class DoubleArrayJsonConverter : JsonConverter<double[]>
     {
         public override double[] ReadJson(JsonReader reader, Type objectType, 

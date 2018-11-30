@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 
 namespace Arctron.Obj23dTiles
 {
+    /// <summary>
+    /// b3dm feature table
+    /// 
+    /// </summary>
     public class FeatureTable
     {
         /// <summary>

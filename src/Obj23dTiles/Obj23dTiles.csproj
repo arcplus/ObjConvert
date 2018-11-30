@@ -22,6 +22,9 @@
     <AssemblyTitle>Obj23dTiles .NET Standard 2.0</AssemblyTitle>
     <DefineConstants>$(AdditionalConstants)</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Arctron.Obj23dTiles.xml</DocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
