@@ -10,6 +10,8 @@
     <PackageTags>obj 3dtiles</PackageTags>
     <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
+    <Copyright>Copyright © Arcplus 2018</Copyright>
+    <Description>Convert wavefront obj file to 3d tiles, which can be used in cesium</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

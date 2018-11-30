@@ -11,6 +11,8 @@
     <PackageTags>obj gltf</PackageTags>
     <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
+    <Copyright>Copyright © Arcplus 2018</Copyright>
+    <Description>Convert wavefront obj file to gltf/glb file</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
