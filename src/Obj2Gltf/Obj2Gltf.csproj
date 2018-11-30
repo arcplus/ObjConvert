@@ -9,6 +9,8 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <AssemblyName>Arctron.Obj2Gltf</AssemblyName>
     <PackageTags>obj gltf</PackageTags>
+    <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

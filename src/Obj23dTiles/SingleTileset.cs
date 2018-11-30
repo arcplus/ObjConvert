@@ -160,6 +160,15 @@ namespace Arctron.Obj23dTiles
                 }
             }
         }
+
+        public double GetBounding()
+        {
+            var x = (OriginalX.Max - OriginalX.Min);
+            var y = (OriginalY.Max - OriginalY.Min);
+            var z = (OriginalZ.Max - OriginalZ.Min);
+
+            return x + y + z;
+        }
     }
 
     public class TileContent
@@ -201,7 +210,9 @@ namespace Arctron.Obj23dTiles
             var xTile = x0.Root;
             var yTile = y0.Root;
 
-            return _comparer.Compare(xTile, yTile);
+            var val = _comparer.Compare(xTile, yTile);
+            if (val != 0) return val;
+            return TileRegionComparer.ContainCompare(xTile, yTile);
         }
 
         private static Tile ToTile(SingleTileset tileset, string parentFolder)
@@ -271,6 +282,42 @@ namespace Arctron.Obj23dTiles
 
     public class TileRegionComparer : Comparer<Tile>
     {
+        /// <summary>
+        /// near / far
+        /// </summary>
+        /// <param name="m1"></param>
+        /// <param name="m2"></param>
+        /// <returns></returns>
+        internal static double Percent(MinMax m1, MinMax m2)
+        {
+            var min = m1.Min;
+            if (min > m2.Min) min = m2.Min;
+            var max = m1.Max;
+            if (max < m2.Max) max = m2.Max;
+            var size = max - min;
+            if (m1.Max <= m2.Min) return 0.0;
+            if (m2.Max <= m1.Min) return 0.0;
+
+            if (m1.Max > m2.Min)
+            {
+                return (m1.Max - m2.Min) / size;
+            }
+            if (m2.Max > m1.Min)
+            {
+                return (m2.Max - m1.Min) / size;
+            }
+            if (m1.Min >= m2.Min && m1.Max <= m2.Max)
+            {
+                return (m1.Max - m1.Min) / size;
+            }
+            if (m2.Min >= m1.Min && m2.Max <= m1.Max)
+            {
+                return (m2.Max - m2.Min) / size;
+            }
+
+            return 0.0;
+
+        }
         private static int CompareXToY(double xMin, double xMax, double yMin, double yMax)
         {
             if (xMin >= yMin && xMax < yMax) return -1;
@@ -307,6 +354,27 @@ namespace Arctron.Obj23dTiles
             {
                 return 1;
             }
+
+
+            return 0;
+
+        }
+
+        internal static int ContainCompare(Tile xTile, Tile yTile)
+        {
+            var xVol = xTile.GetBounding();
+            var yVol = yTile.GetBounding();
+            var xScale = Percent(xTile.OriginalX, yTile.OriginalX);
+            var yScale = Percent(xTile.OriginalY, yTile.OriginalY);
+            var zScale = Percent(xTile.OriginalZ, yTile.OriginalZ);
+
+            var factor = 0.6;
+            if (xScale > factor && yScale > factor && zScale > factor)
+            {
+                if (xVol < yVol) return -1;
+                if (xVol > yVol) return 1;
+            }
+
             return 0;
         }
     }

@@ -8,6 +8,8 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <AssemblyName>Arctron.Obj23dTiles</AssemblyName>
     <PackageTags>obj 3dtiles</PackageTags>
+    <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

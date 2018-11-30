@@ -156,8 +156,8 @@ namespace Arctron.Obj23dTiles
                 JsonConvert.SerializeObject(allTileset,
                 new JsonSerializerSettings
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    Formatting = Formatting.Indented
+                    NullValueHandling = NullValueHandling.Ignore
+                    //,Formatting = Formatting.Indented
                 }));
             return tilesetJsonPath;
         }
