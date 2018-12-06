@@ -126,7 +126,15 @@ namespace Arctron.Obj2Gltf.WaveFront
                         else if (line.StartsWith("Ns"))
                         {
                             var ns = line.Substring("Ns".Length).Trim();
-                            m.SpecularExponent = int.Parse(ns);
+                            if (ns.Contains("."))
+                            {
+                                var d = float.Parse(ns);
+                                m.SpecularExponent = (int)Math.Round(d);
+                            }
+                            else
+                            {
+                                m.SpecularExponent = int.Parse(ns);
+                            }                           
                         }
                         else if (line.StartsWith("map_Ka"))
                         {

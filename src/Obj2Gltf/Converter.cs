@@ -634,7 +634,7 @@ namespace Arctron.Obj2Gltf
                     UpdateMinMax(new[] { v1.Z, v2.Z, v3.Z }, vmmZ);
 
                     Vec3 n1 = new Vec3(), n2 = new Vec3(), n3 = new Vec3();
-                    if (hasNormals)
+                    if (t.V1.N > 0) // hasNormals
                     {
                         var n1Index = t.V1.N - 1;
                         var n2Index = t.V2.N - 1;
@@ -647,7 +647,7 @@ namespace Arctron.Obj2Gltf
                         UpdateMinMax(new[] { n1.Z, n2.Z, n3.Z }, nmmZ);
                     }
                     Vec2 t1 = new Vec2(), t2 = new Vec2(), t3 = new Vec2();
-                    if (hasUvs)
+                    if (t.V1.T > 0) // hasUvs
                     {
                         var t1Index = t.V1.T - 1;
                         var t2Index = t.V2.T - 1;
@@ -656,7 +656,7 @@ namespace Arctron.Obj2Gltf
                         t2 = uvs[t2Index];
                         t3 = uvs[t3Index];
                         UpdateMinMax(new[] { t1.U, t2.U, t3.U }, tmmX);
-                        UpdateMinMax(new[] { t1.V, t2.V, t3.V }, tmmY);
+                        UpdateMinMax(new[] { 1 - t1.V, 1 - t2.V, 1 - t3.V }, tmmY);
                     }
                     
 
@@ -670,7 +670,7 @@ namespace Arctron.Obj2Gltf
                         {
                             nList++; ns.AddRange(n1.ToFloatBytes());
                         }
-                        if (hasUvs)
+                        if (t.V1.T > 0) // hasUvs
                         {
                             tList++; ts.AddRange(new Vec2(t1.U, 1 - t1.V).ToFloatBytes());
                         }
@@ -683,11 +683,11 @@ namespace Arctron.Obj2Gltf
                         FaceVertexCache.Add(v2Str, FaceVertexCount++);
 
                         vList++; vs.AddRange(v2.ToFloatBytes());
-                        if (hasNormals)
+                        if (t.V2.N > 0) // hasNormals
                         {
                             nList++; ns.AddRange(n2.ToFloatBytes());
                         }
-                        if (hasUvs)
+                        if (t.V2.T > 0) // hasUvs
                         {
                             tList++; ts.AddRange(new Vec2(t2.U, 1 - t2.V).ToFloatBytes());
                         }
@@ -700,11 +700,11 @@ namespace Arctron.Obj2Gltf
                         FaceVertexCache.Add(v3Str, FaceVertexCount++);
 
                         vList++; vs.AddRange(v3.ToFloatBytes());
-                        if (hasNormals)
+                        if (t.V3.N > 0) // hasNormals
                         {
                             nList++; ns.AddRange(n3.ToFloatBytes());
                         }
-                        if (hasUvs)
+                        if (t.V3.T > 0) // hasUvs
                         {
                             tList++; ts.AddRange(new Vec2(t3.U, 1 - t3.V).ToFloatBytes());
                         }
@@ -762,7 +762,7 @@ namespace Arctron.Obj2Gltf
                 _buffers.BatchTableJson.MinPoint.Add(accessorVertex.Min);
             }
 
-            if (hasNormals)
+            if (nList> 0) //hasNormals)
             {
                 accessorIndex = _model.Accessors.Count;
                 var accessorNormal = new Accessor
@@ -780,7 +780,7 @@ namespace Arctron.Obj2Gltf
                 _buffers.NormalAccessors.Add(accessorIndex);
             }
                       
-            if (hasUvs)
+            if (tList > 0) //hasUvs)
             {
                 accessorIndex = _model.Accessors.Count;
                 var accessorUv = new Accessor
@@ -803,7 +803,7 @@ namespace Arctron.Obj2Gltf
             {
                 var batchIdCount = vList;
                 accessorIndex = AddBatchIdAttribute(
-                    _buffers.CurrentBatchId, batchIdCount, mesh.Id  + "_batchId", uint32Indices);
+                    _buffers.CurrentBatchId, batchIdCount, mesh.Id  + "_batchId");
                 atts.Add("_BATCHID", accessorIndex);
                 var batchIds = new List<byte>();
                 for (var i = 0; i < batchIdCount; i++)
@@ -840,7 +840,7 @@ namespace Arctron.Obj2Gltf
             return ps;
         }
 
-        private int AddBatchIdAttribute(int batchId, int count, string name, bool u32IndicesEnabled)
+        private int AddBatchIdAttribute(int batchId, int count, string name)
         {
             //var ctype = u32IndicesEnabled ? ComponentType.U32 : ComponentType.U16;
             var ctype = ComponentType.U16;
