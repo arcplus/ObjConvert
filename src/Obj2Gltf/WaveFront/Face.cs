@@ -13,7 +13,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <summary>
         /// face used material name
         /// </summary>
-        public string MatName { get; set; }
+        public string MatName { get; set; } = String.Empty;
         /// <summary>
         /// face meshes
         /// </summary>

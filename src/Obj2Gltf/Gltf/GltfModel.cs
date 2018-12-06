@@ -46,5 +46,20 @@ namespace Arctron.Gltf
             return JsonConvert.DeserializeObject<GltfModel>(s);
         }
 
+        public void Clean()
+        {
+            if (Images != null && Images.Count == 0)
+            {
+                Images = null;
+            }
+            if (Textures != null && Textures.Count == 0)
+            {
+                Textures = null;
+            }
+            if (Samplers != null && Samplers.Count == 0)
+            {
+                Samplers = null;
+            }
+        }
     }
 }

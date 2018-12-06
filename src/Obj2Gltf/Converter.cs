@@ -128,6 +128,7 @@ namespace Arctron.Obj2Gltf
                     var boundary = 4;
                     FillImageBuffers(allBuffers, boundary);
 
+
                     if (!_binary)
                     {
                         _model.Buffers[0].Uri = "data:application/octet-stream;base64," + Convert.ToBase64String(allBuffers.ToArray());
@@ -137,7 +138,8 @@ namespace Arctron.Obj2Gltf
                         _glb = GltfToGlb(allBuffers);
                     }
                 }
-                
+                _model.Clean();
+
             }
             
             
@@ -598,27 +600,34 @@ namespace Arctron.Obj2Gltf
             var uvs = objModel.Uvs;
 
             // Vertex attributes are shared by all primitives in the mesh
-            var name = mesh.Id;
-            
-            
-            MinMax vmmX = new MinMax(), vmmY = new MinMax(), vmmZ = new MinMax();
-            MinMax nmmX = new MinMax(), nmmY = new MinMax(), nmmZ = new MinMax();
-            MinMax tmmX = new MinMax(), tmmY = new MinMax();
-            var vList = 0;
-            var nList = 0;
-            var tList = 0;
-            var vs = new List<byte>(); // vertexBuffers
-            var ns = new List<byte>(); // normalBuffers
-            var ts = new List<byte>(); // textureBuffers
+            var name0 = mesh.Id;
 
-            // every primitive need their own vertex indices(v,t,n)
-            Dictionary<string, int> FaceVertexCache = new Dictionary<string, int>();
-            int FaceVertexCount = 0;
-
-            List<int[]> indiceList = new List<int[]>(faces.Count * 2);
-            var matIndexList = new List<int>(faces.Count * 2);
+            var ps = new List<Primitive>(faces.Count * 2);
+            var index = 0;
             foreach (var f in faces)
             {
+                var faceName = name0;
+                if (index > 0)
+                {
+                    faceName = name0 + "_" + index;
+                }
+                MinMax vmmX = new MinMax(), vmmY = new MinMax(), vmmZ = new MinMax();
+                MinMax nmmX = new MinMax(), nmmY = new MinMax(), nmmZ = new MinMax();
+                MinMax tmmX = new MinMax(), tmmY = new MinMax();
+                var vList = 0;
+                var nList = 0;
+                var tList = 0;
+                var vs = new List<byte>(); // vertexBuffers
+                var ns = new List<byte>(); // normalBuffers
+                var ts = new List<byte>(); // textureBuffers
+
+                // every primitive need their own vertex indices(v,t,n)
+                Dictionary<string, int> FaceVertexCache = new Dictionary<string, int>();
+                int FaceVertexCount = 0;
+
+                //List<int[]> indiceList = new List<int[]>(faces.Count * 2);
+                //var matIndexList = new List<int>(faces.Count * 2);
+
                 // f is a primitive
                 var iList = new List<int>(f.Triangles.Count*3*2); // primitive indices
                 foreach(var t in f.Triangles)
@@ -666,7 +675,7 @@ namespace Arctron.Obj2Gltf
                         FaceVertexCache.Add(v1Str, FaceVertexCount++);
 
                         vList++; vs.AddRange(v1.ToFloatBytes());
-                        if (hasNormals)
+                        if (t.V1.N > 0) // hasNormals
                         {
                             nList++; ns.AddRange(n1.ToFloatBytes());
                         }
@@ -733,108 +742,108 @@ namespace Arctron.Obj2Gltf
                 }
 
                 var materialIndex = GetMaterial(objModel, f.MatName);
-                matIndexList.Add(materialIndex);
+                //matIndexList.Add(materialIndex);
 
-                indiceList.Add(iList.ToArray());
 
-            }
+                var atts = new Dictionary<string, int>();
 
-            var atts = new Dictionary<string, int>();
-
-            var accessorIndex = _model.Accessors.Count;
-            var accessorVertex = new Accessor
-            {
-                Min = new double[] { vmmX.Min, vmmY.Min, vmmZ.Min },
-                Max = new double[] { vmmX.Max, vmmY.Max, vmmZ.Max },
-                Type = AccessorType.VEC3,
-                Count = vList,
-                ComponentType = ComponentType.F32,
-                Name = mesh.Id + "_positions"
-            };
-            _model.Accessors.Add(accessorVertex);
-            atts.Add("POSITION", accessorIndex);
-            _buffers.PositionBuffers.Add(vs.ToArray());
-            _buffers.PositionAccessors.Add(accessorIndex);
-
-            if (_withBatchTable)
-            {
-                _buffers.BatchTableJson.MaxPoint.Add(accessorVertex.Max);
-                _buffers.BatchTableJson.MinPoint.Add(accessorVertex.Min);
-            }
-
-            if (nList> 0) //hasNormals)
-            {
-                accessorIndex = _model.Accessors.Count;
-                var accessorNormal = new Accessor
+                var accessorIndex = _model.Accessors.Count;
+                var accessorVertex = new Accessor
                 {
-                    Min = new double[] { nmmX.Min, nmmY.Min, nmmZ.Min },
-                    Max = new double[] { nmmX.Max, nmmY.Max, nmmZ.Max },
+                    Min = new double[] { vmmX.Min, vmmY.Min, vmmZ.Min },
+                    Max = new double[] { vmmX.Max, vmmY.Max, vmmZ.Max },
                     Type = AccessorType.VEC3,
-                    Count = nList,
+                    Count = vList,
                     ComponentType = ComponentType.F32,
-                    Name = mesh.Id + "_normals"
+                    Name = faceName + "_positions"
                 };
-                _model.Accessors.Add(accessorNormal);
-                atts.Add("NORMAL", accessorIndex);
-                _buffers.NormalBuffers.Add(ns.ToArray());
-                _buffers.NormalAccessors.Add(accessorIndex);
-            }
-                      
-            if (tList > 0) //hasUvs)
-            {
-                accessorIndex = _model.Accessors.Count;
-                var accessorUv = new Accessor
-                {
-                    Min = new double[] { tmmX.Min, tmmY.Min },
-                    Max = new double[] { tmmX.Max, tmmY.Max },
-                    Type = AccessorType.VEC2,
-                    Count = tList,
-                    ComponentType = ComponentType.F32,
-                    Name = mesh.Id + "_texcoords"
-                };
-                _model.Accessors.Add(accessorUv);
-                atts.Add("TEXCOORD_0", accessorIndex);
-                _buffers.UvBuffers.Add(ts.ToArray());
-                _buffers.UvAccessors.Add(accessorIndex);
-            }
-                       
+                _model.Accessors.Add(accessorVertex);
+                atts.Add("POSITION", accessorIndex);
+                _buffers.PositionBuffers.Add(vs.ToArray());
+                _buffers.PositionAccessors.Add(accessorIndex);
 
-            if (_withBatchTable)
-            {
-                var batchIdCount = vList;
-                accessorIndex = AddBatchIdAttribute(
-                    _buffers.CurrentBatchId, batchIdCount, mesh.Id  + "_batchId");
-                atts.Add("_BATCHID", accessorIndex);
-                var batchIds = new List<byte>();
-                for (var i = 0; i < batchIdCount; i++)
+                if (_withBatchTable)
                 {
-                    batchIds.AddRange(BitConverter.GetBytes((ushort)_buffers.CurrentBatchId));
+                    _buffers.BatchTableJson.MaxPoint.Add(accessorVertex.Max);
+                    _buffers.BatchTableJson.MinPoint.Add(accessorVertex.Min);
                 }
-                _buffers.BatchIdBuffers.Add(batchIds.ToArray());
-                _buffers.BatchIdAccessors.Add(accessorIndex);
-                _buffers.BatchTableJson.BatchIds.Add((ushort)_buffers.CurrentBatchId);
-                _buffers.BatchTableJson.Names.Add(mesh.Id);
-                _buffers.CurrentBatchId++;
-            }
 
-            var ps = new List<Primitive>(faces.Count * 2);
-            for (var i = 0; i < indiceList.Count; i++)
-            {
-                var indices = indiceList[i];
-                var indexAccessorIndex = AddIndexArray(indices, uint32Indices, mesh.Id + "_" + i + "_indices");
+                if (nList > 0) //hasNormals)
+                {
+                    accessorIndex = _model.Accessors.Count;
+                    var accessorNormal = new Accessor
+                    {
+                        Min = new double[] { nmmX.Min, nmmY.Min, nmmZ.Min },
+                        Max = new double[] { nmmX.Max, nmmY.Max, nmmZ.Max },
+                        Type = AccessorType.VEC3,
+                        Count = nList,
+                        ComponentType = ComponentType.F32,
+                        Name = faceName + "_normals"
+                    };
+                    _model.Accessors.Add(accessorNormal);
+                    atts.Add("NORMAL", accessorIndex);
+                    _buffers.NormalBuffers.Add(ns.ToArray());
+                    _buffers.NormalAccessors.Add(accessorIndex);
+                }
+
+                if (tList > 0) //hasUvs)
+                {
+                    accessorIndex = _model.Accessors.Count;
+                    var accessorUv = new Accessor
+                    {
+                        Min = new double[] { tmmX.Min, tmmY.Min },
+                        Max = new double[] { tmmX.Max, tmmY.Max },
+                        Type = AccessorType.VEC2,
+                        Count = tList,
+                        ComponentType = ComponentType.F32,
+                        Name = faceName + "_texcoords"
+                    };
+                    _model.Accessors.Add(accessorUv);
+                    atts.Add("TEXCOORD_0", accessorIndex);
+                    _buffers.UvBuffers.Add(ts.ToArray());
+                    _buffers.UvAccessors.Add(accessorIndex);
+                }
+
+
+                if (_withBatchTable)
+                {
+                    var batchIdCount = vList;
+                    accessorIndex = AddBatchIdAttribute(
+                        _buffers.CurrentBatchId, batchIdCount, faceName + "_batchId");
+                    atts.Add("_BATCHID", accessorIndex);
+                    var batchIds = new List<byte>();
+                    for (var i = 0; i < batchIdCount; i++)
+                    {
+                        batchIds.AddRange(BitConverter.GetBytes((ushort)_buffers.CurrentBatchId));
+                    }
+                    _buffers.BatchIdBuffers.Add(batchIds.ToArray());
+                    _buffers.BatchIdAccessors.Add(accessorIndex);
+                    _buffers.BatchTableJson.BatchIds.Add((ushort)_buffers.CurrentBatchId);
+                    _buffers.BatchTableJson.Names.Add(faceName);
+                    _buffers.CurrentBatchId++;
+                }
+
+
+                var indices = iList.ToArray();
+                var indexAccessorIndex = AddIndexArray(indices, uint32Indices, faceName + "_indices");
                 var indexBuffer = uint32Indices ? ToU32Buffer(indices) : ToU16Buffer(indices);
                 _buffers.IndexBuffers.Add(indexBuffer);
-                _buffers.IndexAccessors.Add(indexAccessorIndex);                
+                _buffers.IndexAccessors.Add(indexAccessorIndex);
 
                 var p = new Primitive
                 {
                     Attributes = atts,
                     Indices = indexAccessorIndex,
-                    Material = matIndexList[i],
+                    Material = materialIndex,//matIndexList[i],
                     Mode = Mode.Triangles
                 };
                 ps.Add(p);
+
+
+                index++;
             }
+
+            
 
 
             return ps;
