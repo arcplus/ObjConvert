@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 //http://paulbourke.net/dataformats/mtl/
 
@@ -173,6 +174,13 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         public double[] ToArray(double? alpha=null)
         {
+            var max = new double[] { Red, Green, Blue }.Max();
+            if (max > 1)
+            {
+                Red /= max;
+                Green /= max;
+                Blue /= max;
+            }
             if (alpha == null) return new double[] { Red, Green, Blue };
             return new double[] { Red, Green, Blue, alpha.Value };
         }

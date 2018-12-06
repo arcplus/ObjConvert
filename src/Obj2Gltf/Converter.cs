@@ -468,13 +468,17 @@ namespace Arctron.Obj2Gltf
                     alpha = mat.Dissolve.Factor;
                 }
                 gMat.PbrMetallicRoughness = new PbrMetallicRoughness();
-                if (mat.Diffuse == null)
+                if (mat.Diffuse != null)
+                {
+                    gMat.PbrMetallicRoughness.BaseColorFactor = mat.Diffuse.Color.ToArray(alpha);
+                }
+                else if (mat.Ambient != null)
                 {
                     gMat.PbrMetallicRoughness.BaseColorFactor = mat.Ambient.Color.ToArray(alpha);
                 }
                 else
                 {
-                    gMat.PbrMetallicRoughness.BaseColorFactor = mat.Diffuse.Color.ToArray(alpha);
+                    gMat.PbrMetallicRoughness.BaseColorFactor = new double[] { 0.7, 0.7, 0.7, alpha };
                 }
                 
 

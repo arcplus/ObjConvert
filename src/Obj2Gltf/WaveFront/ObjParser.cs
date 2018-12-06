@@ -142,11 +142,19 @@ namespace Arctron.Obj2Gltf.WaveFront
                         var g = GetGeometry();
                         Face face = GetFace(g);
                         var strs = SplitLine(fStr);
+                        if (strs.Length < 3) continue; // ignore face that has less than 3 vertices
+
                         var v1 = GetVertex(strs[0]);
                         var v2 = GetVertex(strs[1]);
                         var v3 = GetVertex(strs[2]);
                         var f = new FaceTriangle(v1, v2, v3);
                         face.Triangles.Add(f);
+                        if (strs.Length == 4)
+                        {
+                            var v4 = GetVertex(strs[3]);
+                            var ff = new FaceTriangle(v1, v3, v4);
+                            face.Triangles.Add(ff);
+                        }
                     }
                     else
                     {
