@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
     <Copyright>Copyright © Arcplus 2018</Copyright>
     <Description>Convert wavefront obj file to gltf/glb file</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

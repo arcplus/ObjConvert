@@ -43,7 +43,7 @@ namespace Arctron.Gltf
         /// The emissive color of the material.
         /// </summary>
         [JsonProperty("emissiveFactor")]
-        public double[] EmissiveFactor = new double[] { 0, 0, 0 };
+        public double[] EmissiveFactor { get; set; } // = new double[] { 0, 0, 0 };
         /// <summary>
         /// The alpha rendering mode of the material.
         ///
@@ -105,6 +105,6 @@ namespace Arctron.Gltf
         /// * A value of 1.0 means the material is completely rough.
         /// * A value of 0.0 means the material is completely smooth.
         [JsonProperty("roughnessFactor")]
-        public double RoughnessFactor { get; set; }
+        public double RoughnessFactor { get; set; } = 0.9;
     }
 }

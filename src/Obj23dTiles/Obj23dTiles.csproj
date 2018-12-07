@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
     <Copyright>Copyright © Arcplus 2018</Copyright>
     <Description>Convert wavefront obj file to 3d tiles, which can be used in cesium</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

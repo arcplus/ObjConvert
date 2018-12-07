@@ -437,10 +437,10 @@ namespace Arctron.Obj2Gltf
             {
                 AlphaMode = AlphaMode.OPAQUE,
                 Name = "default",
-                EmissiveFactor = new double[] { 1, 1, 1 },
+                //EmissiveFactor = new double[] { 1, 1, 1 },
                 PbrMetallicRoughness = new PbrMetallicRoughness
                 {
-                    BaseColorFactor = new double[] { 1, 1, 1, 1 },
+                    BaseColorFactor = new double[] { 0.5, 0.5, 0.5, 1 },
                     MetallicFactor = 0.0,
                     RoughnessFactor = 0.0
                 }
@@ -462,7 +462,7 @@ namespace Arctron.Obj2Gltf
                     AlphaMode = AlphaMode.OPAQUE
                 };
                 var alpha = 1.0;
-                if (mat.Dissolve != null)
+                if (mat.Dissolve != null && mat.Dissolve.Factor > 0)
                 {
                     gMat.AlphaMode = AlphaMode.BLEND;
                     alpha = mat.Dissolve.Factor;

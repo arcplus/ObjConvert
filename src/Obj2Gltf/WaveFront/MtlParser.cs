@@ -166,5 +166,17 @@ namespace Arctron.Obj2Gltf.WaveFront
                 _reader.Close();                
             }
         }
+        /// <summary>
+        /// Translate the blinn-phong model to the pbr metallic-roughness model
+        /// Roughness factor is a combination of specular intensity and shininess
+        /// Metallic factor is 0.0
+        /// Textures are not converted for now
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public static double Luminance(Color color)
+        {
+            return color.Red * 0.2125 + color.Green * 0.7154 + color.Blue * 0.0721;
+        }
     }
 }
