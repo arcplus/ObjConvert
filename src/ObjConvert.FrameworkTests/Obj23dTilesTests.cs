@@ -51,7 +51,7 @@ namespace Arctron.ObjConvert.FrameworkTests
                 }
                 if (!File.Exists(objFile))
                 {
-                    throw new FileNotFoundException("未能找到文件", objFile);
+                    throw new FileNotFoundException("Obj file not found", objFile);
                 }
                 return WriteTileset(objFile, name, outputDir, gisPosition);
             }
@@ -84,7 +84,7 @@ namespace Arctron.ObjConvert.FrameworkTests
 
         }
 
-        public static string MergeMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition)
+        public static string MergeMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition, bool lod)
         {
             var name = Path.GetFileNameWithoutExtension(objZipFile);
             var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
@@ -96,7 +96,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             try
             {
                 ExtractZipFile(objZipFile, unzipDir);
-                return MergeMTilesets(unzipDir, outputDir, gisPosition);
+                return MergeMTilesets(unzipDir, outputDir, gisPosition, lod);
             }
             finally
             {
@@ -105,19 +105,19 @@ namespace Arctron.ObjConvert.FrameworkTests
 
         }
 
-        public static string WriteMTilesets(string objFolder, string outputDir, GisPosition gisPosition)
+        public static string WriteMTilesets(string objFolder, string outputDir, GisPosition gisPosition, bool merge=false)
         {
-            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
+            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition) { MergeTileJsonFiles = merge };
             return tileConverter.Run();
             //var objFiles = Directory.GetFiles(objFolder, "*.obj");
             //var tilesetJson = Utility.CombineTilesets(outputDir, gisPosition, objFiles);
             //return tilesetJson;
         }
 
-        public static string MergeMTilesets(string objFolder, string outputDir, GisPosition gisPosition)
+        public static string MergeMTilesets(string objFolder, string outputDir, GisPosition gisPosition, bool lod)
         {
-            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition, true);
-            return tileConverter.Run();
+            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
+            return tileConverter.Run(lod);
             //var objFiles = Directory.GetFiles(objFolder, "*.obj");
             //var tilesetJson = Utility.MergeTilesets(outputDir, gisPosition, true, objFiles);
             //return tilesetJson;

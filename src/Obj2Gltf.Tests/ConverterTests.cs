@@ -18,7 +18,6 @@ namespace Arctron.Obj2Gltf.Tests
         public void TestConvertGltf()
         {
             var name = "model";
-
             CheckObjFiles();            
 
             var converter = new Converter(TestObjFile, false);

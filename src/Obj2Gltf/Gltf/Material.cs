@@ -99,7 +99,7 @@ namespace Arctron.Gltf
         /// The metalness of the material.
         /// </summary>
         [JsonProperty("metallicFactor")]
-        public double MetallicFactor { get; set; }
+        public double MetallicFactor { get; set; } = 1.0;
         /// The roughness of the material.
         ///
         /// * A value of 1.0 means the material is completely rough.

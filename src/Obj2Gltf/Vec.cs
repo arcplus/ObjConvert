@@ -68,6 +68,11 @@ namespace Arctron.Obj2Gltf
             return new Vec3(X / len, Y / len, Z / len);
         }
 
+        public Vec3 Substract(Vec3 p)
+        {
+            return new Vec3(X - p.X, Y - p.Y, Z - p.Z);
+        }
+
         public Vec3 MultiplyBy(double val)
         {
             return new Vec3(X * val, Y * val, Z * val);

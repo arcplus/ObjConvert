@@ -13,14 +13,22 @@ namespace Arctron.ObjConvert.FrameworkTests
         static void Main(string[] args)
         {
             //Obj2GltfTests.TestConvert();
-            Test3dTiles();
+            Test3dTile();
+            //Test3dTiles();
+        }
+
+        static void Test3dTile()
+        {
+            var gisPosition = new GisPosition();
+            var mobjZipFile2 = @"testm3.mobjr";
+            Obj23dTilesTests.MergeMTilesetsWithZip(mobjZipFile2, "testm4", gisPosition, false);
         }
 
         static void Test3dTiles()
         {
-            var gisPosition = new GisPosition(121.449, 31.1989, 40.0);
-            //var objZipFile = @"test.objr";
-            //Obj23dTilesTests.WriteTilesetWithZip(objZipFile, "test", gisPosition);
+            var gisPosition = new GisPosition();
+            var objZipFile = @"test.objr";
+            Obj23dTilesTests.WriteTilesetWithZip(objZipFile, "test", gisPosition);
 
             var mobjZipFile = @"testm.mobjr";
             var tasks = new Task<string>[2];
@@ -28,7 +36,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             Obj23dTilesTests.WriteMTilesetsWithZip(mobjZipFile, "testm", gisPosition));
             var mobjZipFile2 = @"testm2.mobjr";
             tasks[1] = Task.Run(() =>
-            Obj23dTilesTests.MergeMTilesetsWithZip(mobjZipFile2, "testm2", gisPosition));
+            Obj23dTilesTests.MergeMTilesetsWithZip(mobjZipFile2, "testm2", gisPosition, true));
             Task.WaitAll(tasks);
             
         }

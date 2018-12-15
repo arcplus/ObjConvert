@@ -4,12 +4,26 @@ using System.Linq;
 using System.Text;
 using Arctron.Obj2Gltf;
 
+// https://my.oschina.net/u/1585572/blog/290548
+
 namespace Arctron.Obj23dTiles
 {
+    /// <summary>
+    /// GIS helpers
+    /// </summary>
     public static class GisUtil
     {
+        public static double LatitudeToMeters(double latDiff)
+        {
+            return latDiff / 0.000000157891;
+        }
+
+        public static double LongitudeToMeters(double lonDiff, double lat)
+        {
+            return (lonDiff / 0.000000156785) * Math.Cos(lat);
+        }
         /// <summary>
-        /// 
+        /// Extent
         /// </summary>
         /// <param name="meters"></param>
         /// <param name="latitude">in radian</param>
@@ -18,7 +32,11 @@ namespace Arctron.Obj23dTiles
         {
             return meters * 0.000000156785 / Math.Cos(latitude);
         }
-
+        /// <summary>
+        /// Extent
+        /// </summary>
+        /// <param name="meters"></param>
+        /// <returns></returns>
         public static double MetersToLatituide(double meters)
         {
             return meters * 0.000000157891;
@@ -207,7 +225,8 @@ namespace Arctron.Obj23dTiles
 
         }
 
-        public static Vec3 CesiumFromRadians(double longitude, double latitude, double height, Vec3 radiiSquared)
+        public static Vec3 CesiumFromRadians(double longitude, double latitude,
+            double height, Vec3 radiiSquared)
         {
             var cosLatitude = Math.Cos(latitude);
             var scratchN = (new Vec3(
@@ -239,7 +258,7 @@ namespace Arctron.Obj23dTiles
         }
     }
 
-    public class HeadingPitchRoll
+    internal class HeadingPitchRoll
     {
         public double Heading { get; set; }
 
@@ -250,7 +269,7 @@ namespace Arctron.Obj23dTiles
     /// <summary>
     /// A set of 4-dimensional coordinates used to represent rotation in 3-dimensional space.
     /// </summary>
-    public class Quaternion
+    internal class Quaternion
     {
         public double X { get; set; }
 
@@ -361,7 +380,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="rotation"></param>
         /// <param name="scale"></param>
         /// <returns></returns>
-        public static Matrix4 FromTranslationQuaternionRotationScale(Vec3 translation,
+        internal static Matrix4 FromTranslationQuaternionRotationScale(Vec3 translation,
             Quaternion rotation, Vec3 scale)
         {
             var scaleX = scale.X;
@@ -543,6 +562,7 @@ namespace Arctron.Obj23dTiles
         }
     }
 
+    // https://github.com/AnalyticalGraphicsInc/cesium
     /// <summary>
     /// A quadratic surface defined in Cartesian coordinates by the equation
     /// <code>(x / a)^2 + (y / b)^2 + (z / c)^2 = 1</code>.  Primarily used
@@ -604,6 +624,128 @@ namespace Arctron.Obj23dTiles
         {
             var res = Vec3.Multiply(pnt, OneOverRadiiSquared);
             return res.Normalize();
+        }
+        /// <summary>
+        /// Converts the provided cartesian to cartographic representation.
+        /// The cartesian is undefined at the center of the ellipsoid.
+        /// </summary>
+        /// <param name="xyz"></param>
+        /// <returns></returns>
+        public Vec3? CartesianToCartographic(Vec3 xyz)
+        {
+
+            var p = ScaleToGeodeticSurface(xyz, OneOverRadii, OneOverRadiiSquared, CenterToleranceSquared);
+            if (!p.HasValue) return p;
+            var n = GeodeticSurfaceNormal(p.Value);
+            var h = xyz.Substract(p.Value);
+
+            var longitude = Math.Atan2(n.Y, n.X);
+            var latitude = Math.Asin(n.Z);
+
+            var heitDot = Vec3.Dot(h, xyz);
+            var heitSign = 0.0;
+            if (heitDot > 0)
+            {
+                heitSign = 1.0;
+            }
+            else if (heitDot < 0)
+            {
+                heitSign = -1.0;
+            }
+            var height = heitSign * h.GetLength();
+
+            return new Vec3(longitude, latitude, height);
+        }
+
+        /// <summary>
+        /// Scales the provided Cartesian position along the geodetic surface normal
+        /// so that it is on the surface of this ellipsoid.If the position is
+        /// at the center of the ellipsoid, this function returns undefined.
+        /// </summary>
+        /// <param name="cartesian">The Cartesian position to scale.</param>
+        /// <param name="oneOverRadii">One over radii of the ellipsoid.</param>
+        /// <param name="oneOverRadiiSquared">One over radii squared of the ellipsoid.</param>
+        /// <param name="centerToleranceSquared">Tolerance for closeness to the center.</param>
+        /// <returns></returns>
+        private static Vec3? ScaleToGeodeticSurface(Vec3 cartesian,
+            Vec3 oneOverRadii, Vec3 oneOverRadiiSquared, 
+            double centerToleranceSquared)
+        {
+
+            var positionX = cartesian.X;
+            var positionY = cartesian.Y;
+            var positionZ = cartesian.Z;
+
+            var oneOverRadiiX = oneOverRadii.X;
+            var oneOverRadiiY = oneOverRadii.Y;
+            var oneOverRadiiZ = oneOverRadii.Z;
+
+            var x2 = positionX * positionX * oneOverRadiiX * oneOverRadiiX;
+            var y2 = positionY * positionY * oneOverRadiiY * oneOverRadiiY;
+            var z2 = positionZ * positionZ * oneOverRadiiZ * oneOverRadiiZ;
+
+            // Compute the squared ellipsoid norm.
+            var squaredNorm = x2 + y2 + z2;
+            var ratio = Math.Sqrt(1.0 / squaredNorm);
+
+            // As an initial approximation, assume that the radial intersection is the projection point.
+            var intersection = cartesian.MultiplyBy(ratio);
+
+            // If the position is near the center, the iteration will not converge.
+            if (squaredNorm < centerToleranceSquared)
+            {
+                return double.IsInfinity(ratio) ? default(Vec3?) : intersection;
+            }
+
+            var oneOverRadiiSquaredX = oneOverRadiiSquared.X;
+            var oneOverRadiiSquaredY = oneOverRadiiSquared.Y;
+            var oneOverRadiiSquaredZ = oneOverRadiiSquared.Z;
+
+            // Use the gradient at the intersection point in place of the true unit normal.
+            // The difference in magnitude will be absorbed in the multiplier.
+            var gradient = new Vec3(
+                intersection.X * oneOverRadiiSquaredX * 2.0,
+                intersection.Y * oneOverRadiiSquaredY * 2.0,
+                intersection.Z * oneOverRadiiSquaredZ * 2.0
+                );
+
+            // Compute the initial guess at the normal vector multiplier, lambda.
+            var lambda = (1.0 - ratio) * cartesian.GetLength() / (0.5 * gradient.GetLength());
+            var correction = 0.0;
+
+            double xMultiplier;
+            double yMultiplier;
+            double zMultiplier;
+            double func;
+            do
+            {
+                lambda -= correction;
+
+                xMultiplier = 1.0 / (1.0 + lambda * oneOverRadiiSquaredX);
+                yMultiplier = 1.0 / (1.0 + lambda * oneOverRadiiSquaredY);
+                zMultiplier = 1.0 / (1.0 + lambda * oneOverRadiiSquaredZ);
+
+                var xMultiplier2 = xMultiplier * xMultiplier;
+                var yMultiplier2 = yMultiplier * yMultiplier;
+                var zMultiplier2 = zMultiplier * zMultiplier;
+
+                var xMultiplier3 = xMultiplier2 * xMultiplier;
+                var yMultiplier3 = yMultiplier2 * yMultiplier;
+                var zMultiplier3 = zMultiplier2 * zMultiplier;
+
+                func = x2 * xMultiplier2 + y2 * yMultiplier2 + z2 * zMultiplier2 - 1.0;
+
+                // "denominator" here refers to the use of this expression in the velocity and acceleration
+                // computations in the sections to follow.
+                var denominator = x2 * xMultiplier3 * oneOverRadiiSquaredX + y2 * yMultiplier3 * oneOverRadiiSquaredY + z2 * zMultiplier3 * oneOverRadiiSquaredZ;
+
+                var derivative = -2.0 * denominator;
+
+                correction = func / derivative;
+            } while (Math.Abs(func) > 1e-12); // CesiumMath.EPSILON12
+
+            return new Vec3(positionX * xMultiplier, positionY * yMultiplier, positionZ * zMultiplier);
+
         }
 
         public static Ellipsoid Wgs84 { get; } = new Ellipsoid(

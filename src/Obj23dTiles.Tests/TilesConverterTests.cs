@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
 using System.Threading.Tasks;
+using Arctron.Obj2Gltf;
 
 namespace Arctron.Obj23dTiles.Tests
 {
@@ -26,7 +27,7 @@ namespace Arctron.Obj23dTiles.Tests
             {
                 Directory.CreateDirectory(outputDir);
             }
-            var gisPosition = new GisPosition(121.42824921445794, 31.2151756310598, 0); //(103.844016705, 1.32066772, 2.0);
+            var gisPosition = new GisPosition();
             TilesConverter.WriteTilesetFile(TestObjFile, outputDir, gisPosition);
             Assert.True(File.Exists(Path.Combine(outputDir, "tileset.json")));
         }
@@ -97,9 +98,9 @@ namespace Arctron.Obj23dTiles.Tests
             }
             var gisPosition = new GisPosition
             {
-                Longitude = 1.81245, //1.812478, //2.1196599980996,
-                Latitude = 0.023043, //0.0230270, //0.543224178326409,
-                TransHeight = 15.0
+                Longitude = 0,
+                Latitude = 0,
+                TransHeight = 0
             };
             var objFiles = Directory.GetFiles(folder, "*.obj", SearchOption.AllDirectories);
             var tasks = new Task<string>[objFiles.Length];
@@ -146,14 +147,10 @@ namespace Arctron.Obj23dTiles.Tests
             {
                 Directory.CreateDirectory(outputDir);
             }
-            // 31.19703,121.45238
-            var gisPosition = new GisPosition(121.449, 31.1989, 40.0);
+            var gisPosition = new GisPosition();
 
             var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
             var tilesetJson = tileConverter.Run();
-
-            //var objFiles = Directory.GetFiles(objFolder, "*.obj");
-            //var tilesetJson = Utility.CombineTilesets(outputDir, gisPosition, objFiles);
 
             Assert.True(File.Exists(tilesetJson));
         }
@@ -164,18 +161,15 @@ namespace Arctron.Obj23dTiles.Tests
             var name = "test";
             var objFolder = @"TestObjsFolder";
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
-            var outputDir = name+"2"; //"mtileset";
+            var outputDir = name+"2";
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
-            // 31.19703,121.45238
-            var gisPosition = new GisPosition(121.23823421692855, 31.838769935520705, 0.0);
-
-            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition, true);
-            var tilesetJson = tileConverter.Run();
-            //var objFiles = Directory.GetFiles(objFolder, "*.obj");
-            //var tilesetJson = Utility.MergeTilesets(outputDir, gisPosition, true, objFiles);
+            var gisPosition = new GisPosition();
+            var lod = true;
+            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
+            var tilesetJson = tileConverter.Run(lod);
 
             Assert.True(File.Exists(tilesetJson));
         }
@@ -198,6 +192,27 @@ namespace Arctron.Obj23dTiles.Tests
         {
             var m = GisUtil.Wgs84Transform(2.1196599980996, 0.543224178326409, 0);
             Assert.True(m != null);
+        }
+
+        [Fact]
+        public void Test_ECEF()
+        {
+            var xyz = new Vec3(406432.73, 4324887.681, 952313.73);
+            var gis = Ellipsoid.Wgs84.CartesianToCartographic(xyz);
+            Assert.NotNull(gis);
+        }
+
+        [Fact]
+        public void Test_Meters()
+        {
+            var eastWest = 406432730.00 / 1000.0;
+            var northSouth = 4324887681.00 / 1000.0;
+            var lat = GisUtil.MetersToLatituide(eastWest);
+            var lon = GisUtil.MetersToLongitude(northSouth, lat);
+            var latDegree = 180 * lat / Math.PI;
+            var lonDegree = 180 * lon / Math.PI;
+            Assert.True(lat > 0);
+            Assert.True(lon > 0);
         }
     }
 }

@@ -431,17 +431,17 @@ namespace Arctron.Obj2Gltf
             return textureIndex;
         }
 
-        private Gltf.Material GetDefault()
+        private Gltf.Material GetDefault(string name = "default", AlphaMode mode = AlphaMode.OPAQUE)
         {
             return new Gltf.Material
             {
-                AlphaMode = AlphaMode.OPAQUE,
-                Name = "default",
+                AlphaMode = mode,
+                Name = name,
                 //EmissiveFactor = new double[] { 1, 1, 1 },
                 PbrMetallicRoughness = new PbrMetallicRoughness
                 {
                     BaseColorFactor = new double[] { 0.5, 0.5, 0.5, 1 },
-                    MetallicFactor = 0.0,
+                    MetallicFactor = 1.0,
                     RoughnessFactor = 0.0
                 }
             };

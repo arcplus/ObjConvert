@@ -17,31 +17,33 @@ namespace Arctron.Obj23dTiles
         private readonly string _objFolder;
         private readonly string _outputFolder;
         private readonly GisPosition _gisPosition;
-        private readonly bool _lod;
         /// <summary>
-        /// whether to merge tileset.json files
+        /// whether to merge tileset.json files. 
+        /// if true, only one tileset.json file will be generated, 
+        /// all the b3dm files will be root's first level children
         /// </summary>
         public bool MergeTileJsonFiles { get; set; } = true;
+
+        public bool WriteChildTileJson { get; set; } = true;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="objFolder">folder contains obj files</param>
         /// <param name="outputFolder">tiles output folder</param>
-        /// <param name="gisPosition">where the tiles are</param>
-        /// <param name="lod">whether generate hierarchical tileset.json</param>
+        /// <param name="gisPosition">where the tiles are</param>        
         public TilesConverter(string objFolder, string outputFolder, 
-            GisPosition gisPosition, bool lod=false)
+            GisPosition gisPosition)
         {
             _objFolder = objFolder;
             _outputFolder = outputFolder;
             _gisPosition = gisPosition;
-            _lod = lod;
         }
         /// <summary>
         /// run converter
         /// </summary>
+        /// <param name="lod">whether generate hierarchical tileset.json</param>
         /// <returns></returns>
-        public string Run()
+        public string Run(bool lod = false)
         {
             var outputDir = _outputFolder;
             if (!Directory.Exists(outputDir))
@@ -54,7 +56,7 @@ namespace Arctron.Obj23dTiles
             var objFiles = Directory.GetFiles(objFolder, "*.obj");
             if (MergeTileJsonFiles)
             {
-                return MergeTilesets(outputDir, gisPosition, _lod, objFiles);
+                return MergeTilesets(outputDir, gisPosition, lod, WriteChildTileJson, objFiles);
             }
             return CombineTilesets(outputDir, gisPosition, objFiles);
         }
@@ -66,7 +68,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="lod">whether generate hierarchical tileset.json</param>
         /// <param name="objFiles">obj file list</param>
         /// <returns></returns>
-        public static string MergeTilesets(string outputFolder, GisPosition gisPosition, bool lod, params string[] objFiles)
+        internal static string MergeTilesets(string outputFolder, GisPosition gisPosition, bool lod, bool writeChildTilesetJson, params string[] objFiles)
         {
             var tasks = new Task<SingleTileset>[objFiles.Length];
             var dataFolderName = "BatchedModels";
@@ -111,12 +113,51 @@ namespace Arctron.Obj23dTiles
                     minheight = Math.Min(minheight, boundingVolume.Region[4]);
                     maxheight = Math.Max(maxheight, boundingVolume.Region[5]);
                 }
+                var contentName = Path.GetFileNameWithoutExtension(json.Root.Content.Url);
                 if (!lod)
                 {
+                    var err = geometricError0 / 4.0;
+                    if (json.Root != null)
+                    {
+                        double? err0 = null;
+                        if (json.Root.OriginalX != null && json.Root.OriginalX.IsValid())
+                        {
+                            var errX = (json.Root.OriginalX.Max - json.Root.OriginalX.Min) / 10;
+                            err0 = errX;
+                        }
+                        if (json.Root.OriginalY != null && json.Root.OriginalY.IsValid())
+                        {
+                            var errY = (json.Root.OriginalY.Max - json.Root.OriginalY.Min) / 10;
+                            if (!err0.HasValue)
+                            {
+                                err0 = errY;
+                            }
+                            else if (err0.Value < errY)
+                            {
+                                err0 = errY;
+                            }
+                        }
+                        if (json.Root.OriginalZ != null && json.Root.OriginalZ.IsValid())
+                        {
+                            var errZ = (json.Root.OriginalZ.Max - json.Root.OriginalZ.Min) / 10;
+                            if (!err0.HasValue)
+                            {
+                                err0 = errZ;
+                            }
+                            else if (err0.Value < errZ)
+                            {
+                                err0 = errZ;
+                            }
+                        }
+                        if (err0.HasValue)
+                        {
+                            err = err0.Value;
+                        }
+                    }
                     tiles.Add(new Tile
                     {
                         BoundingVolume = boundingVolume,
-                        GeometricError = geometricError0,
+                        GeometricError = 0.0,
                         Refine = null,
                         Content = new TileContent
                         {
@@ -125,7 +166,11 @@ namespace Arctron.Obj23dTiles
                         }
                     });
                 }
-
+                if(writeChildTilesetJson)
+                {
+                    var jsonFilepath = Path.Combine(outputPath, contentName + ".json");
+                    WriteTilesetJsonFile(jsonFilepath, json);
+                }
             }
             if (lod)
             {
@@ -183,7 +228,8 @@ namespace Arctron.Obj23dTiles
         /// <param name="gisPosition">where the tiles are</param>
         /// <param name="objFiles">obj file list</param>
         /// <returns></returns>
-        public static string CombineTilesets(string outputFolder, GisPosition gisPosition, params string[] objFiles)
+        internal static string CombineTilesets(string outputFolder, GisPosition gisPosition,
+            params string[] objFiles)
         {
             var tasks = new Task<string>[objFiles.Length];
             for (var i = 0; i < objFiles.Length; i++)
@@ -226,6 +272,7 @@ namespace Arctron.Obj23dTiles
                     minheight = Math.Min(minheight, boundingVolume.Region[4]);
                     maxheight = Math.Max(maxheight, boundingVolume.Region[5]);
                 }
+                
                 tiles.Add(new Tile
                 {
                     BoundingVolume = boundingVolume,
@@ -278,7 +325,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputPath">output folder</param>
         /// <param name="gisPosition">where the obj model positioned</param>
         /// <returns></returns>
-        public static SingleTileset WriteTileset(string objFile, string outputPath, GisPosition gisPosition)
+        internal static SingleTileset WriteTileset(string objFile, string outputPath, GisPosition gisPosition)
         {
             var fileName = Path.GetFileNameWithoutExtension(objFile);
             var b3dmFile = Path.Combine(outputPath, fileName + ".b3dm");
@@ -293,6 +340,16 @@ namespace Arctron.Obj23dTiles
             var singleTileset = SingleTileset.Create(tilesetOptions);
             return singleTileset;
         }
+
+        private static void WriteTilesetJsonFile(string jsonFilepath, SingleTileset singleTileset)
+        {
+            var tilesetJson = JsonConvert.SerializeObject(singleTileset, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                Formatting = Formatting.Indented
+            });
+            File.WriteAllText(jsonFilepath, tilesetJson, Encoding.UTF8);
+        }
         /// <summary>
         /// when converted, generate tileset.json
         /// </summary>
@@ -300,17 +357,13 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputPath">output folder</param>
         /// <param name="gisPosition">where the obj model positioned</param>
         /// <returns></returns>
-        public static string WriteTilesetFile(string objFile, string outputPath, GisPosition gisPosition)
+        public static string WriteTilesetFile(string objFile, string outputPath, 
+            GisPosition gisPosition)
         {
             var singleTileset = WriteTileset(objFile, outputPath, gisPosition);
 
             var tilesetFile = Path.Combine(outputPath, "tileset.json");
-            var tilesetJson = JsonConvert.SerializeObject(singleTileset, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.Indented
-            });
-            File.WriteAllText(tilesetFile, tilesetJson, Encoding.UTF8);
+            WriteTilesetJsonFile(tilesetFile, singleTileset);
             return tilesetFile;
         }
         /// <summary>
