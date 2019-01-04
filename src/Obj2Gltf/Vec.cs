@@ -29,6 +29,11 @@ namespace Arctron.Obj2Gltf
         {            
             return BitConverter.GetBytes((float)U).Concat(BitConverter.GetBytes((float)V)).ToArray();
         }
+
+        public double[] ToArray()
+        {
+            return new[] { U, V };
+        }
     }
     /// <summary>
     /// 3-d point or verctor
@@ -117,6 +122,11 @@ namespace Arctron.Obj2Gltf
         public static double Dot(Vec3 v1, Vec3 v2)
         {
             return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
+        }
+
+        public double[] ToArray()
+        {
+            return new[] { X, Y, Z };
         }
     }
     /// <summary>

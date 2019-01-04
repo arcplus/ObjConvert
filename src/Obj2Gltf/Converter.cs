@@ -461,7 +461,9 @@ namespace Arctron.Obj2Gltf
                     Name = mat.Name,
                     AlphaMode = AlphaMode.OPAQUE
                 };
+                var hasTexture = !String.IsNullOrEmpty(mat.DiffuseTextureFile);
                 var alpha = 1.0;
+                
                 if (mat.Dissolve != null && mat.Dissolve.Factor > 0)
                 {
                     gMat.AlphaMode = AlphaMode.BLEND;
@@ -482,7 +484,7 @@ namespace Arctron.Obj2Gltf
                 }
                 
 
-                if (!String.IsNullOrEmpty(mat.DiffuseTextureFile))
+                if (hasTexture)
                 {
                     int index = -1;
                     for (var i = 0; i < _model.Textures.Count; i++)
@@ -502,6 +504,10 @@ namespace Arctron.Obj2Gltf
                     {
                         Index = index
                     };
+                }
+                else
+                {
+                    gMat.EmissiveFactor = new double[] { 0, 0, 0 };
                 }
             }
             

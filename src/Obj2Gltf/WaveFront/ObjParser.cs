@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Arctron.Obj2Gltf.Geom;
 
 namespace Arctron.Obj2Gltf.WaveFront
 {
@@ -154,6 +155,30 @@ namespace Arctron.Obj2Gltf.WaveFront
                             var v4 = GetVertex(strs[3]);
                             var ff = new FaceTriangle(v1, v3, v4);
                             face.Triangles.Add(ff);
+                        }
+                        else if (strs.Length > 4)
+                        {
+                            var points = new List<Vec3>();
+                            for(var i = 0;i<strs.Length;i++)
+                            {
+                                var vv = GetVertex(strs[i]);
+                                var p = _model.Vertices[vv.V-1];
+                                points.Add(p);
+                            }
+                            var planeAxis = GeomUtil.ComputeProjectTo2DArguments(points);
+                            if (planeAxis != null)
+                            {
+                                var points2D = GeomUtil.CreateProjectPointsTo2DFunction(planeAxis, points);
+                                var indices = PolygonPipeline.Triangulate(points2D, null);
+                                for(var i = 0; i < indices.Length-2;i+=3)
+                                {
+                                    var vv1 = GetVertex(strs[indices[i]]);
+                                    var vv2 = GetVertex(strs[indices[i + 1]]);
+                                    var vv3 = GetVertex(strs[indices[i + 2]]);
+                                    var ff = new FaceTriangle(vv1, vv2, vv3);
+                                    face.Triangles.Add(ff);
+                                }
+                            }
                         }
                     }
                     else
