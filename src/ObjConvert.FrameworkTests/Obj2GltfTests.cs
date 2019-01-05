@@ -11,17 +11,18 @@ namespace Arctron.ObjConvert.FrameworkTests
 {
     public class Obj2GltfTests
     {
-        internal static string TestObjFile = @"..\..\..\testassets\Office\model.obj";
+        static string Name = "model";
+        internal static string TestObjFile = $@"..\..\..\testassets\Office\{Name}.obj";
 
         public static void TestConvert()
         {
             var objFile = TestObjFile;
             var opts = new GltfOptions();
             var converter = new Converter(objFile, opts);
-            var outputFile = "model.gltf";
+            var outputFile = $"{Name}.gltf";
             if (opts.Binary)
             {
-                outputFile = "model.glb";
+                outputFile = $"{Name}.glb";
             }
             converter.Run();
             converter.WriteFile(outputFile);

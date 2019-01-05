@@ -12,8 +12,8 @@ namespace Arctron.ObjConvert.FrameworkTests
         
         static void Main(string[] args)
         {
-            //Obj2GltfTests.TestConvert();
-            Test3dTile();
+            Obj2GltfTests.TestConvert();
+            //Test3dTile();
             //Test3dTiles();
         }
 

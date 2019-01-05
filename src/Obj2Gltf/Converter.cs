@@ -18,10 +18,6 @@ namespace Arctron.Obj2Gltf
         public bool Binary { get; set; }
 
         public bool WithBatchTable { get; set; }
-        /// <summary>
-        /// if true, model will be brighter
-        /// </summary>
-        public bool EnableLuminance { get; set; }
     }
     /// <summary>
     /// obj2gltf converter
