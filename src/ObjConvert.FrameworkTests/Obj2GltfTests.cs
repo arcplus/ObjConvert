@@ -16,8 +16,13 @@ namespace Arctron.ObjConvert.FrameworkTests
         public static void TestConvert()
         {
             var objFile = TestObjFile;
-            var converter = new Converter(objFile, false);
+            var opts = new GltfOptions();
+            var converter = new Converter(objFile, opts);
             var outputFile = "model.gltf";
+            if (opts.Binary)
+            {
+                outputFile = "model.glb";
+            }
             converter.Run();
             converter.WriteFile(outputFile);
         }

@@ -9,6 +9,20 @@ using Newtonsoft.Json;
 
 namespace Arctron.Obj2Gltf
 {
+
+    public class GltfOptions
+    {
+        /// <summary>
+        /// glb?
+        /// </summary>
+        public bool Binary { get; set; }
+
+        public bool WithBatchTable { get; set; }
+        /// <summary>
+        /// if true, model will be brighter
+        /// </summary>
+        public bool EnableLuminance { get; set; }
+    }
     /// <summary>
     /// obj2gltf converter
     /// </summary>
@@ -17,22 +31,31 @@ namespace Arctron.Obj2Gltf
         private readonly ObjParser _objParser;
         private readonly string _objFolder;
         private readonly string _name;
-        private readonly bool _binary;
-        private readonly bool _withBatchTable;
+
+        private readonly GltfOptions _options;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="objFile">obj file path</param>
         /// <param name="binary">whether generate glb</param>
         /// <param name="withBatchTable"> whether generate batch table</param>
+        [Obsolete("Please use the constructor with GltfOptions")]
         public Converter(string objFile, bool binary, bool withBatchTable = false)
+            :this(objFile, new GltfOptions
+            {
+                Binary = binary,
+                WithBatchTable = withBatchTable
+            })
+        {
+        }
+
+        public Converter(string objFile, GltfOptions options)
         {
             _objParser = new ObjParser(objFile);
             _objFolder = Path.GetDirectoryName(objFile);
             _name = Path.GetFileNameWithoutExtension(objFile);
-            _binary = binary;
-            _withBatchTable = withBatchTable;
-            _buffers = new BufferState(withBatchTable);
+            _options = options ?? new GltfOptions();
+            _buffers = new BufferState(_options.WithBatchTable);
         }
 
         private GltfModel _model;
@@ -48,7 +71,7 @@ namespace Arctron.Obj2Gltf
             {
                 Run();
             }
-            if (!_binary)
+            if (!_options.Binary)
             {
                 var json = ToJson(_model);
                 File.WriteAllText(outputFile, json);
@@ -129,7 +152,7 @@ namespace Arctron.Obj2Gltf
                     FillImageBuffers(allBuffers, boundary);
 
 
-                    if (!_binary)
+                    if (!_options.Binary)
                     {
                         _model.Buffers[0].Uri = "data:application/octet-stream;base64," + Convert.ToBase64String(allBuffers.ToArray());
                     }
@@ -302,7 +325,7 @@ namespace Arctron.Obj2Gltf
             AddBufferView(bufferState.NormalBuffers, bufferState.NormalAccessors.ToArray(), 12, 0x8892);
             AddBufferView(bufferState.UvBuffers, bufferState.UvAccessors.ToArray(), 8, 0x8892); // ARRAY_BUFFER
             AddBufferView(bufferState.IndexBuffers, bufferState.IndexAccessors.ToArray(), null, 0x8893); // ELEMENT_ARRAY_BUFFER
-            if (_withBatchTable)
+            if (_options.WithBatchTable)
             {
                 AddBufferView(bufferState.BatchIdBuffers, bufferState.BatchIdAccessors.ToArray(), 0, 0x8892);
             }
@@ -324,7 +347,7 @@ namespace Arctron.Obj2Gltf
             {
                 buffers.AddRange(b);
             }
-            if (_withBatchTable)
+            if (_options.WithBatchTable)
             {
                 foreach(var b in bufferState.BatchIdBuffers)
                 {
@@ -837,7 +860,7 @@ namespace Arctron.Obj2Gltf
                 _buffers.PositionBuffers.Add(vs.ToArray());
                 _buffers.PositionAccessors.Add(accessorIndex);
 
-                if (_withBatchTable)
+                if (_options.WithBatchTable)
                 {
                     _buffers.BatchTableJson.MaxPoint.Add(accessorVertex.Max);
                     _buffers.BatchTableJson.MinPoint.Add(accessorVertex.Min);
@@ -880,7 +903,7 @@ namespace Arctron.Obj2Gltf
                 }
 
 
-                if (_withBatchTable)
+                if (_options.WithBatchTable)
                 {
                     var batchIdCount = vList;
                     accessorIndex = AddBatchIdAttribute(

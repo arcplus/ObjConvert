@@ -23,7 +23,9 @@ namespace Arctron.Obj23dTiles
         /// all the b3dm files will be root's first level children
         /// </summary>
         public bool MergeTileJsonFiles { get; set; } = true;
-
+        /// <summary>
+        /// keep children b3dm tileset.json
+        /// </summary>
         public bool WriteChildTileJson { get; set; } = true;
         /// <summary>
         /// 
@@ -66,6 +68,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputFolder">tiles output folder</param>
         /// <param name="gisPosition">where the tiles are</param>
         /// <param name="lod">whether generate hierarchical tileset.json</param>
+        /// <param name="writeChildTilesetJson">keep children b3dm tileset.json</param>
         /// <param name="objFiles">obj file list</param>
         /// <returns></returns>
         internal static string MergeTilesets(string outputFolder, GisPosition gisPosition, bool lod, bool writeChildTilesetJson, params string[] objFiles)
@@ -380,7 +383,8 @@ namespace Arctron.Obj23dTiles
             {
                 options = new Options();
             }
-            var converter = new Converter(objFile, true, true);
+            var gltfOptions = new GltfOptions { Binary = true, WithBatchTable = true };
+            var converter = new Converter(objFile, gltfOptions);
             var glb = converter.GetGlb();
             var batchTableJson = converter.GetBatchTable();
             var length = batchTableJson.MaxPoint.Count;
