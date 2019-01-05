@@ -6,14 +6,15 @@
     <RootNamespace>Arctron.Obj2Gltf</RootNamespace>
     <Authors>Arctron</Authors>
     <Company>Arcplus</Company>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>Arctron.Obj2Gltf</AssemblyName>
     <PackageTags>obj gltf</PackageTags>
     <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
     <Copyright>Copyright © Arcplus 2018</Copyright>
     <Description>Convert wavefront obj file to gltf/glb file</Description>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">

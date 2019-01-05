@@ -5,14 +5,14 @@
     <RootNamespace>Arctron.Obj23dTiles</RootNamespace>
     <Company>Arcplus</Company>
     <Authors>Arctron</Authors>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>Arctron.Obj23dTiles</AssemblyName>
     <PackageTags>obj 3dtiles</PackageTags>
     <PackageProjectUrl>https://github.com/arcplus/ObjConvert</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcplus/ObjConvert</RepositoryUrl>
     <Copyright>Copyright © Arcplus 2018</Copyright>
     <Description>Convert wavefront obj file to 3d tiles, which can be used in cesium</Description>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
