@@ -396,6 +396,19 @@ namespace Arctron.Obj2Gltf
 
         #region Materials
 
+        /// <summary>
+        /// Translate the blinn-phong model to the pbr metallic-roughness model
+        /// Roughness factor is a combination of specular intensity and shininess
+        /// Metallic factor is 0.0
+        /// Textures are not converted for now
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public static double Luminance(Color color)
+        {
+            return color.Red * 0.2125 + color.Green * 0.7154 + color.Blue * 0.0721;
+        }
+
         private int AddTexture(string textureFilename)
         {
             var image = new Image
@@ -447,6 +460,46 @@ namespace Arctron.Obj2Gltf
             };
         }
 
+        private static double Clamp(double val, double min, double max)
+        {
+            if (val < min) return min;
+            if (val > max) return max;
+            return val;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>roughnessFactor</returns>
+        private static double ConvertTraditional2MetallicRoughness(WaveFront.Material mat)
+        {
+
+            if (mat.Specular == null || mat.Specular.Color == null)
+            {
+                return 0.0;
+            }
+            // Translate the blinn-phong model to the pbr metallic-roughness model
+            // Roughness factor is a combination of specular intensity and shininess
+            // Metallic factor is 0.0
+            // Textures are not converted for now
+            var specularIntensity = Luminance(mat.Specular.Color);
+            // Transform from 0-1000 range to 0-1 range. Then invert.
+            var roughnessFactor = mat.SpecularExponent; // options.metallicRoughness ? 1.0 : 0.0;
+            roughnessFactor = roughnessFactor / 1000.0;
+            roughnessFactor = 1.0 - roughnessFactor;
+            roughnessFactor = Clamp(roughnessFactor, 0.0, 1.0);
+
+            // Low specular intensity values should produce a rough material even if shininess is high.
+            if (specularIntensity < 0.1)
+            {
+                roughnessFactor *= (1.0 - specularIntensity);
+            }
+
+            var metallicFactor = 0.0;
+            mat.Specular = new Reflectivity(new Color(metallicFactor));
+            return roughnessFactor;
+        }
+
         private int AddMaterial(WaveFront.Material mat)
         {
             Gltf.Material gMat = null;
@@ -456,20 +509,25 @@ namespace Arctron.Obj2Gltf
             }
             else
             {
+                var roughnessFactor = ConvertTraditional2MetallicRoughness(mat);
+
                 gMat = new Gltf.Material
                 {
                     Name = mat.Name,
                     AlphaMode = AlphaMode.OPAQUE
                 };
                 var hasTexture = !String.IsNullOrEmpty(mat.DiffuseTextureFile);
-                var alpha = 1.0;
-                
-                if (mat.Dissolve != null && mat.Dissolve.Factor > 0)
+                var alpha = mat.GetAlpha();
+                var metallicFactor = 0.0;
+                if (mat.Specular != null && mat.Specular.Color != null)
                 {
-                    gMat.AlphaMode = AlphaMode.BLEND;
-                    alpha = mat.Dissolve.Factor;
+                    metallicFactor = mat.Specular.Color.Red;
                 }
-                gMat.PbrMetallicRoughness = new PbrMetallicRoughness();
+                gMat.PbrMetallicRoughness = new PbrMetallicRoughness
+                {
+                    RoughnessFactor = roughnessFactor,
+                    MetallicFactor = metallicFactor
+                };
                 if (mat.Diffuse != null)
                 {
                     gMat.PbrMetallicRoughness.BaseColorFactor = mat.Diffuse.Color.ToArray(alpha);
@@ -499,15 +557,22 @@ namespace Arctron.Obj2Gltf
                     {
                         index = AddTexture(mat.DiffuseTextureFile);
                     }
-                    gMat.AlphaMode = AlphaMode.BLEND;
+                    //gMat.AlphaMode = AlphaMode.BLEND;
                     gMat.PbrMetallicRoughness.BaseColorTexture = new Info
                     {
                         Index = index
                     };
                 }
-                else
+
+                if (mat.Emissive != null && mat.Emissive.Color != null)
                 {
-                    gMat.EmissiveFactor = new double[] { 0, 0, 0 };
+                    gMat.EmissiveFactor = mat.Emissive.Color.ToArray();
+                }
+
+                if (alpha < 1.0)
+                {
+                    gMat.AlphaMode = AlphaMode.BLEND;
+                    gMat.DoubleSided = true;
                 }
             }
             

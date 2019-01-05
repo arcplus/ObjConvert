@@ -8,8 +8,8 @@ Convert to:
 Obj file limitations:
 
 1. one mtl file
-2. all faces should be triangles already
-3. only convert ka, kd, map_ka, map_kd, Ns, d material info
+2. all faces should have 3 or 4 vertices
+3. only convert ka, kd, Ke, map_ka, map_kd, Ns, d, Tr material info
 
 ## References
 

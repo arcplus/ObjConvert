@@ -36,14 +36,25 @@ namespace Arctron.Obj2Gltf.WaveFront
             var strs = val.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (strs.Length == 3)
             {
-                double r = double.Parse(strs[0]);
-                double g = double.Parse(strs[1]);
-                double b = double.Parse(strs[2]);
+                var r = double.Parse(strs[0]);
+                var g = double.Parse(strs[1]);
+                var b = double.Parse(strs[2]);
 
                 return new Reflectivity(new Color(r, g, b));
             }
 
             //TODO:
+            return null;
+        }
+
+        private Transparency GetTransparency(string str)
+        {
+            double val;
+            var ok = double.TryParse(str, out val);
+            if (ok)
+            {
+                return new Transparency { Factor = val };
+            }
             return null;
         }
 
@@ -53,6 +64,10 @@ namespace Arctron.Obj2Gltf.WaveFront
             double val;
             var ok = double.TryParse(strs[strs.Length-1], out val);
             if (!ok) return null;
+            if (val == 0)
+            {
+                val = 1.0f;
+            }
             var d =new Dissolve{Factor = val};
             if (strs[0] == "-halo")
             {
@@ -118,10 +133,24 @@ namespace Arctron.Obj2Gltf.WaveFront
                                 m.Specular = r;
                             }
                         }
+                        else if (line.StartsWith("Ke"))
+                        {
+                            var ks = line.Substring("Ke".Length).Trim();
+                            var r = GetReflectivity(ks);
+                            if (r != null)
+                            {
+                                m.Emissive = r;
+                            }
+                        }
                         else if (line.StartsWith("d"))
                         {
                             var d = line.Substring("d".Length).Trim();
                             m.Dissolve = GetDissolve(d);
+                        }
+                        else if (line.StartsWith("Tr"))
+                        {
+                            var tr = line.Substring("Tr".Length).Trim();
+                            m.Transparency = GetTransparency(tr);
                         }
                         else if (line.StartsWith("Ns"))
                         {
@@ -166,17 +195,6 @@ namespace Arctron.Obj2Gltf.WaveFront
                 _reader.Close();                
             }
         }
-        /// <summary>
-        /// Translate the blinn-phong model to the pbr metallic-roughness model
-        /// Roughness factor is a combination of specular intensity and shininess
-        /// Metallic factor is 0.0
-        /// Textures are not converted for now
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        public static double Luminance(Color color)
-        {
-            return color.Red * 0.2125 + color.Green * 0.7154 + color.Blue * 0.0721;
-        }
+        
     }
 }

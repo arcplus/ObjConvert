@@ -11,7 +11,7 @@ namespace Arctron.ObjConvert.FrameworkTests
 {
     public class Obj2GltfTests
     {
-        internal static readonly string TestObjFile = @"..\..\..\testassets\Office\model.obj";
+        internal static string TestObjFile = @"..\..\..\testassets\Office\model.obj";
 
         public static void TestConvert()
         {

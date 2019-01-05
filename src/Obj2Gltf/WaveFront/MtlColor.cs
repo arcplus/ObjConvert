@@ -20,11 +20,11 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <summary>
         /// Ka: Ambient Color
         /// </summary>
-        public Reflectivity Ambient { get; set; }
+        public Reflectivity Ambient { get; set; } = new Reflectivity(new Color());
         /// <summary>
         /// Kd: Diffuse Color
         /// </summary>
-        public Reflectivity Diffuse { get; set; }
+        public Reflectivity Diffuse { get; set; } = new Reflectivity(new Color(0.5f));
         /// <summary>
         /// map_Kd: Diffuse texture file path
         /// </summary>
@@ -34,34 +34,55 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// </summary>
         public string AmbientTextureFile { get; set; }
         /// <summary>
-        /// specular reflectivity of the current material
+        /// Ks: specular reflectivity of the current material
         /// </summary>
-        public Reflectivity Specular { get; set; }
+        public Reflectivity Specular { get; set; } = new Reflectivity(new Color());
         /// <summary>
-        /// transmission filter: Any light passing through the object 
+        /// Tf: transmission filter: Any light passing through the object 
         /// is filtered by the transmission filter
         /// </summary>
         public Reflectivity Filter { get; set; }
         /// <summary>
-        /// illum illum_# 0 ~ 10
+        /// Ke: emissive color
+        /// </summary>
+        public Reflectivity Emissive { get; set; } = new Reflectivity(new Color());
+        /// <summary>
+        /// illum: illum_# 0 ~ 10
         /// </summary>
         public int? Illumination { get; set; }
         /// <summary>
-        /// he dissolve for the current material.
+        /// d: the dissolve for the current material.
         /// </summary>
         public Dissolve Dissolve { get; set; }
         /// <summary>
-        /// Ns exponent 0 ~ 1000
+        /// Tr: Transparency
         /// </summary>
-        public int SpecularExponent { get; set; }
+        public Transparency Transparency { get; set; }
+        /// <summary>
+        /// Ns: specularShininess 0 ~ 1000
+        /// </summary>
+        public double SpecularExponent { get; set; }
         /// <summary>
         /// sharpness value 0 ~ 1000, The default is 60
         /// </summary>
-        public int? Sharpness { get; set; } = 60;
+        public int? Sharpness { get; set; }
         /// <summary>
         /// 0.001 ~ 10
         /// </summary>
         public double? OpticalDensity { get; set; }
+
+        public double GetAlpha()
+        {
+            if (Dissolve != null)
+            {
+                return Dissolve.Factor;                
+            }
+            if (Transparency != null)
+            {
+                return (1.0 - Transparency.Factor);
+            }
+            return 1.0;
+        }
 
         public override string ToString()
         {
@@ -79,6 +100,10 @@ namespace Arctron.Obj2Gltf.WaveFront
             {
                 sb.Append($"Ks {Specular}" + Environment.NewLine);
             }
+            if (Emissive != null)
+            {
+                sb.Append($"Ke {Emissive}" + Environment.NewLine);
+            }
             if (Dissolve != null && Dissolve.Factor < 1)
             {
                 sb.Append(Dissolve + Environment.NewLine);
@@ -86,6 +111,14 @@ namespace Arctron.Obj2Gltf.WaveFront
             if (SpecularExponent > 0)
             {
                 sb.Append($"Ns {SpecularExponent}" + Environment.NewLine);
+            }
+            if (Sharpness != null)
+            {
+                sb.Append($"sharpness {Sharpness}" + Environment.NewLine);
+            }
+            if (Filter != null)
+            {
+                sb.Append($"Tf {Filter}" + Environment.NewLine);
             }
             if (!String.IsNullOrEmpty(AmbientTextureFile))
             {
@@ -148,6 +181,10 @@ namespace Arctron.Obj2Gltf.WaveFront
 
     public class Color
     {
+        public Color()
+        {
+
+        }
         public Color(double v)
         {
             Red = v;
@@ -201,6 +238,11 @@ namespace Arctron.Obj2Gltf.WaveFront
         public float Y { get; set; }
 
         public float Z { get; set; }
+    }
+
+    public class Transparency
+    {
+        public double Factor { get; set; }
     }
     /// <summary>
     /// 1- transparency
