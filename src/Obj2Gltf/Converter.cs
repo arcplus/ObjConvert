@@ -897,6 +897,14 @@ namespace Arctron.Obj2Gltf
                     _buffers.UvBuffers.Add(ts.ToArray());
                     _buffers.UvAccessors.Add(accessorIndex);
                 }
+                else
+                {
+                    var gMat = _model.Materials[materialIndex];
+                    if (gMat.PbrMetallicRoughness.BaseColorTexture != null)
+                    {
+                        gMat.PbrMetallicRoughness.BaseColorTexture = null;
+                    }
+                }
 
 
                 if (_options.WithBatchTable)
