@@ -34,6 +34,27 @@ namespace Arctron.Obj2Gltf
         {
             return new[] { U, V };
         }
+
+        public double GetDistance(Vec2 p)
+        {
+            return Math.Sqrt((U - p.U) * (U - p.U) + (V - p.V) * (V - p.V));
+        }
+
+        public double GetLength()
+        {
+            return Math.Sqrt(U * U + V * V);
+        }
+
+        public Vec2 Normalize()
+        {
+            var len = GetLength();
+            return new Vec2(U / len, V / len);
+        }
+
+        public double Dot(Vec2 v)
+        {
+            return U * v.U + V * v.V;
+        }
     }
     /// <summary>
     /// 3-d point or verctor
