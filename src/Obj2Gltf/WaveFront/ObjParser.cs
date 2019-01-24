@@ -108,7 +108,12 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             if(_model == null)
             {
-                _model = new ObjModel();                
+                var modelName = "Untitled";
+                if (!String.IsNullOrEmpty(_objFile))
+                {
+                    modelName = Path.GetFileNameWithoutExtension(_objFile);
+                }
+                _model = new ObjModel { Name = modelName };                
                 while(!_reader.EndOfStream)
                 {
                     var line = _reader.ReadLine().Trim();

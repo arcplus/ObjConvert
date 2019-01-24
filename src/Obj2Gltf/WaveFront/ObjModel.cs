@@ -11,6 +11,7 @@ namespace Arctron.Obj2Gltf.WaveFront
     /// </summary>
     public class ObjModel
     {
+        public string Name { get; set; }
         /// <summary>
         /// obj used mat file path
         /// </summary>

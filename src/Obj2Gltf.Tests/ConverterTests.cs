@@ -20,8 +20,24 @@ namespace Arctron.Obj2Gltf.Tests
             var name = "model";
             CheckObjFiles();            
 
-            var converter = new Converter(TestObjFile, false);
+            var converter = new Converter(TestObjFile, new GltfOptions());
             var outputFile = name+".gltf";
+            converter.Run();
+            converter.WriteFile(outputFile);
+            Assert.True(File.Exists(outputFile));
+        }
+
+        [Fact]
+        public void TestConvertGltf2()
+        {
+            var name = "model";
+            CheckObjFiles();
+
+            var objParser = new WaveFront.ObjParser(TestObjFile);
+            var objModel = objParser.GetModel();
+
+            var converter = new Converter(objModel, Path.GetDirectoryName(TestObjFile), new GltfOptions { Name = "model" });
+            var outputFile = name + ".gltf";
             converter.Run();
             converter.WriteFile(outputFile);
             Assert.True(File.Exists(outputFile));
@@ -34,7 +50,7 @@ namespace Arctron.Obj2Gltf.Tests
 
             CheckObjFiles();
             var objFile = TestObjFile;
-            var converter = new Converter(objFile, true);
+            var converter = new Converter(objFile, new GltfOptions { Binary = true });
             var outputFile = $"{name}.glb";
             converter.Run();
             converter.WriteFile(outputFile);

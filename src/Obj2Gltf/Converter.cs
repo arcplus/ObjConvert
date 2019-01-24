@@ -13,6 +13,10 @@ namespace Arctron.Obj2Gltf
     public class GltfOptions
     {
         /// <summary>
+        /// Model Name
+        /// </summary>
+        public string Name { get; set; } = "Untitled";
+        /// <summary>
         /// glb?
         /// </summary>
         public bool Binary { get; set; }
@@ -32,7 +36,6 @@ namespace Arctron.Obj2Gltf
     {
         private readonly ObjParser _objParser;
         private readonly string _objFolder;
-        private readonly string _name;
 
         private readonly GltfOptions _options;
         /// <summary>
@@ -54,16 +57,35 @@ namespace Arctron.Obj2Gltf
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="objFile"></param>
+        /// <param name="objFile">obj file path</param>
         /// <param name="options"></param>
         public Converter(string objFile, GltfOptions options)
         {
             _objParser = new ObjParser(objFile, options.ObjEncoding);
             _objFolder = Path.GetDirectoryName(objFile);
-            _name = Path.GetFileNameWithoutExtension(objFile);
+            var name = Path.GetFileNameWithoutExtension(objFile);
             _options = options ?? new GltfOptions();
+            if (String.IsNullOrEmpty(_options.Name))
+            {
+                _options.Name = name;
+            }
             _buffers = new BufferState(_options.WithBatchTable);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objModel">Parsed ObjModel</param>
+        /// <param name="objFolder">where the obj file resides</param>
+        /// <param name="options"></param>
+        public Converter(ObjModel objModel, string objFolder, GltfOptions options)
+        {
+            _objModel = objModel;
+            _objFolder = objFolder;
+            _options = options ?? new GltfOptions();
+            _buffers = new BufferState(_options.WithBatchTable);            
+        }
+
+        private ObjModel _objModel;
 
         private GltfModel _model;
         private List<byte> _glb;
@@ -124,49 +146,52 @@ namespace Arctron.Obj2Gltf
             {
                 _model = new GltfModel();
                 //TODO:
-                using(_objParser)
+                if (_objModel == null)
                 {
-                    var objModel = _objParser.GetModel();
-                    _model.Scenes.Add(new Scene());
-                    var u32IndicesEnabled = RequiresUint32Indices(objModel);
-                    var meshes = objModel.Geometries;
-                    var meshesLength = meshes.Count;
-                    for (var i = 0; i < meshesLength; i++)
+                    using (_objParser)
                     {
-                        var mesh = meshes[i];
-                        var meshIndex = AddMesh(objModel, mesh, u32IndicesEnabled);
-                        AddNode(mesh.Id, meshIndex, null);
+                        _objModel = _objParser.GetModel();
                     }
+                }
+                _model.Scenes.Add(new Scene());
+                var u32IndicesEnabled = RequiresUint32Indices(_objModel);
+                var meshes = _objModel.Geometries;
+                var meshesLength = meshes.Count;
+                for (var i = 0; i < meshesLength; i++)
+                {
+                    var mesh = meshes[i];
+                    var meshIndex = AddMesh(_objModel, mesh, u32IndicesEnabled);
+                    AddNode(mesh.Id, meshIndex, null);
+                }
 
-                    if (_model.Images.Count > 0)
+                if (_model.Images.Count > 0)
+                {
+                    _model.Samplers.Add(new Sampler
                     {
-                        _model.Samplers.Add(new Sampler
-                        {
-                            MagFilter = MagFilter.Linear,
-                            MinFilter = MinFilter.NearestMipmapLinear,
-                            WrapS = WrappingMode.Repeat,
-                            WrapT = WrappingMode.Repeat
-                        });
-                    }
-
-                    var allBuffers = AddBuffers(_name);
-                    _model.Buffers.Add(new Gltf.Buffer
-                    {
-                        Name = _name,
-                        ByteLength = allBuffers.Count
+                        MagFilter = MagFilter.Linear,
+                        MinFilter = MinFilter.NearestMipmapLinear,
+                        WrapS = WrappingMode.Repeat,
+                        WrapT = WrappingMode.Repeat
                     });
-                    var boundary = 4;
-                    FillImageBuffers(allBuffers, boundary);
+                }
+
+                var allBuffers = AddBuffers(_options.Name);
+                _model.Buffers.Add(new Gltf.Buffer
+                {
+                    Name = _options.Name,
+                    ByteLength = allBuffers.Count
+                });
+                var boundary = 4;
+                FillImageBuffers(allBuffers, boundary);
 
 
-                    if (!_options.Binary)
-                    {
-                        _model.Buffers[0].Uri = "data:application/octet-stream;base64," + Convert.ToBase64String(allBuffers.ToArray());
-                    }
-                    else
-                    {
-                        _glb = GltfToGlb(allBuffers);
-                    }
+                if (!_options.Binary)
+                {
+                    _model.Buffers[0].Uri = "data:application/octet-stream;base64," + Convert.ToBase64String(allBuffers.ToArray());
+                }
+                else
+                {
+                    _glb = GltfToGlb(allBuffers);
                 }
                 _model.Clean();
 

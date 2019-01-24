@@ -32,6 +32,23 @@ namespace Arctron.Obj23dTiles.Tests
             Assert.True(File.Exists(Path.Combine(outputDir, "tileset.json")));
         }
 
+        [Fact]
+        public void Test_WriteTileset2()
+        {
+            CheckObjFiles();
+            var outputDir = "tileset2";
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+            var objParser = new Obj2Gltf.WaveFront.ObjParser(TestObjFile);
+            var objModel = objParser.GetModel();
+
+            var gisPosition = new GisPosition();
+            TilesConverter.WriteTilesetFile(objModel, Path.GetDirectoryName(TestObjFile), outputDir, gisPosition);
+            Assert.True(File.Exists(Path.Combine(outputDir, "tileset.json")));
+        }
+
         public static void ExtractZipFile(string archiveFilenameIn, string password, string outFolder)
         {
             ZipFile zf = null;
@@ -149,7 +166,35 @@ namespace Arctron.Obj23dTiles.Tests
             }
             var gisPosition = new GisPosition();
 
-            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
+            var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition) { MergeTileJsonFiles = false };
+            var tilesetJson = tileConverter.Run();
+
+            Assert.True(File.Exists(tilesetJson));
+        }
+
+        [Fact]
+        public void Test_CombineTilesets2()
+        {
+            var name = "combinetest2";
+            var objFolder = @"TestObjsFolder";
+            Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
+            var outputDir = name; //"mtileset";
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+            var gisPosition = new GisPosition();
+
+            var objModels = new List<Obj2Gltf.WaveFront.ObjModel>();
+            foreach(var objFile in Directory.GetFiles(objFolder, "*.obj"))
+            {
+                var op = new Obj2Gltf.WaveFront.ObjParser(objFile);
+                var om = op.GetModel();
+                objModels.Add(om);
+            }
+
+            var tileConverter = new TilesConverter(objFolder, objModels, 
+                gisPosition, new TilesOptions { OutputFolder = outputDir, MergeTileJsonFiles = false });
             var tilesetJson = tileConverter.Run();
 
             Assert.True(File.Exists(tilesetJson));
@@ -158,10 +203,10 @@ namespace Arctron.Obj23dTiles.Tests
         [Fact]
         public void Test_MergeTilesets()
         {
-            var name = "test";
+            var name = "mergetest";
             var objFolder = @"TestObjsFolder";
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
-            var outputDir = name+"2";
+            var outputDir = name;
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
@@ -169,6 +214,35 @@ namespace Arctron.Obj23dTiles.Tests
             var gisPosition = new GisPosition();
             var lod = true;
             var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
+            var tilesetJson = tileConverter.Run(lod);
+
+            Assert.True(File.Exists(tilesetJson));
+        }
+        [Fact]
+        public void Test_MergeTilesets2()
+        {
+            var name = "mergetest2";
+            var objFolder = @"TestObjsFolder";
+            Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
+            var outputDir = name;
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+            var gisPosition = new GisPosition();
+            var lod = true;
+
+            var objModels = new List<Obj2Gltf.WaveFront.ObjModel>();
+            foreach (var objFile in Directory.GetFiles(objFolder, "*.obj"))
+            {
+                var op = new Obj2Gltf.WaveFront.ObjParser(objFile);
+                var om = op.GetModel();
+                objModels.Add(om);
+            }
+
+
+            var tileConverter = new TilesConverter(objFolder, objModels, 
+                gisPosition, new TilesOptions { OutputFolder = outputDir, MergeTileJsonFiles = true });
             var tilesetJson = tileConverter.Run(lod);
 
             Assert.True(File.Exists(tilesetJson));
