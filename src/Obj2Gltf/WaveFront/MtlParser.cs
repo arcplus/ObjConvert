@@ -13,21 +13,70 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         private readonly string _parentFolder;
 
+        private Encoding _encoding;
+
         private List<Material> _mats = new List<Material>();
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mtlFile">material file</param>
-        public MtlParser(string mtlFile)
+        public MtlParser(string mtlFile):this(mtlFile, InitEncoding(mtlFile))
+        {
+            var encoding = InitEncoding(mtlFile);
+            _reader = new StreamReader(mtlFile, encoding);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mtlFile">material file</param>
+        /// <param name="encoding"></param>
+        public MtlParser(string mtlFile, Encoding encoding)
         {
             _mtlFile = mtlFile;
             _parentFolder = Path.GetDirectoryName(mtlFile);
-            _reader = new StreamReader(mtlFile, Encoding.UTF8);
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+            _reader = new StreamReader(mtlFile, encoding);
         }
 
-        public MtlParser(Stream stream)
+        internal static Encoding InitEncoding(string mtlFile)
         {
-            _reader = new StreamReader(stream, Encoding.UTF8);
+            Encoding encoding = null;
+            using (var sr = new StreamReader(mtlFile, true))
+            {
+                sr.Read();
+                encoding = sr.CurrentEncoding;
+                sr.Close();
+            }
+            return encoding;
+        }
+
+        internal static Encoding InitEncoding(Stream stream)
+        {
+            Encoding encoding = null;
+            using (var sr = new StreamReader(stream, true))
+            {
+                sr.ReadLine();
+                encoding = sr.CurrentEncoding;
+                sr.Close();
+            }
+            return encoding;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stream"></param>
+        public MtlParser(Stream stream) : this(stream, InitEncoding(stream)) { }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="encoding"></param>
+        public MtlParser(Stream stream, Encoding encoding)
+        {
+            _reader = new StreamReader(stream, encoding);
         }
 
         private static Reflectivity GetReflectivity(string val)

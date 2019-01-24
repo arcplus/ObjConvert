@@ -16,8 +16,14 @@ namespace Arctron.Obj2Gltf
         /// glb?
         /// </summary>
         public bool Binary { get; set; }
-
+        /// <summary>
+        /// whether to generate batchids
+        /// </summary>
         public bool WithBatchTable { get; set; }
+        /// <summary>
+        /// obj and mtl files' text encoding
+        /// </summary>
+        public Encoding ObjEncoding { get; set; } = Encoding.UTF8;
     }
     /// <summary>
     /// obj2gltf converter
@@ -40,14 +46,19 @@ namespace Arctron.Obj2Gltf
             :this(objFile, new GltfOptions
             {
                 Binary = binary,
-                WithBatchTable = withBatchTable
+                WithBatchTable = withBatchTable,
+                ObjEncoding = MtlParser.InitEncoding(objFile)
             })
         {
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objFile"></param>
+        /// <param name="options"></param>
         public Converter(string objFile, GltfOptions options)
         {
-            _objParser = new ObjParser(objFile);
+            _objParser = new ObjParser(objFile, options.ObjEncoding);
             _objFolder = Path.GetDirectoryName(objFile);
             _name = Path.GetFileNameWithoutExtension(objFile);
             _options = options ?? new GltfOptions();
@@ -492,21 +503,23 @@ namespace Arctron.Obj2Gltf
         /// <returns>roughnessFactor</returns>
         private static double ConvertTraditional2MetallicRoughness(WaveFront.Material mat)
         {
+            // Transform from 0-1000 range to 0-1 range. Then invert.
+            //var roughnessFactor = mat.SpecularExponent; // options.metallicRoughness ? 1.0 : 0.0;
+            //roughnessFactor = roughnessFactor / 1000.0;
+            var roughnessFactor = 1.0 - mat.SpecularExponent / 1000.0;
+            roughnessFactor = Clamp(roughnessFactor, 0.0, 1.0);
 
             if (mat.Specular == null || mat.Specular.Color == null)
             {
-                return 0.0;
+                mat.Specular = new Reflectivity(new Color());
+                return roughnessFactor;
             }
             // Translate the blinn-phong model to the pbr metallic-roughness model
             // Roughness factor is a combination of specular intensity and shininess
             // Metallic factor is 0.0
             // Textures are not converted for now
             var specularIntensity = Luminance(mat.Specular.Color);
-            // Transform from 0-1000 range to 0-1 range. Then invert.
-            var roughnessFactor = mat.SpecularExponent; // options.metallicRoughness ? 1.0 : 0.0;
-            roughnessFactor = roughnessFactor / 1000.0;
-            roughnessFactor = 1.0 - roughnessFactor;
-            roughnessFactor = Clamp(roughnessFactor, 0.0, 1.0);
+            
 
             // Low specular intensity values should produce a rough material even if shininess is high.
             if (specularIntensity < 0.1)
@@ -576,7 +589,6 @@ namespace Arctron.Obj2Gltf
                     {
                         index = AddTexture(mat.DiffuseTextureFile);
                     }
-                    //gMat.AlphaMode = AlphaMode.BLEND;
                     gMat.PbrMetallicRoughness.BaseColorTexture = new Info
                     {
                         Index = index
@@ -595,7 +607,6 @@ namespace Arctron.Obj2Gltf
                 }
             }
             
-
             var matIndex = _model.Materials.Count;
             _model.Materials.Add(gMat);
             return matIndex;

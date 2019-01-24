@@ -15,15 +15,29 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         private readonly StreamReader _reader;
         private ObjModel _model = null;
-        
+        private readonly Encoding _encoding;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="objFile">obj file path</param>
-        public ObjParser(string objFile)
+        public ObjParser(string objFile):this(objFile, MtlParser.InitEncoding(objFile))
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objFile">obj file path</param>
+        /// <param name="encoding"></param>
+        public ObjParser(string objFile, Encoding encoding)
         {
             _objFile = objFile;
-            _reader = new StreamReader(objFile, Encoding.UTF8);
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+            _encoding = encoding;
+            _reader = new StreamReader(objFile, _encoding);
         }
 
         private Geometry GetGeometry()
@@ -98,8 +112,9 @@ namespace Arctron.Obj2Gltf.WaveFront
                 while(!_reader.EndOfStream)
                 {
                     var line = _reader.ReadLine().Trim();
+                    if (String.IsNullOrEmpty(line)) continue;
                     if (line.StartsWith("#")) continue;
-                    if (StartWith(line, "mtllib")) //(line.StartsWith("mtllib ") || line.StartsWith("mtllib\t"))
+                    if (StartWith(line, "mtllib"))
                     {
                         _model.MatFilename = line.Substring(6).Trim();
                     }
@@ -110,53 +125,60 @@ namespace Arctron.Obj2Gltf.WaveFront
                         var v = new Vec3(double.Parse(strs[0]), double.Parse(strs[1]), double.Parse(strs[2]));
                         _model.Vertices.Add(v);
                     }
-                    else if (StartWith(line, "vn"))  //(line.StartsWith("vn ") || line.StartsWith("vn\t"))
+                    else if (StartWith(line, "vn"))
                     {
                         var vnStr = line.Substring(2).Trim();
                         var strs = SplitLine(vnStr);
                         var vn = new Vec3(double.Parse(strs[0]), double.Parse(strs[1]), double.Parse(strs[2]));
                         _model.Normals.Add(vn);
                     }
-                    else if (StartWith(line, "vt"))  //(line.StartsWith("vt ") || line.StartsWith("vt\t"))
+                    else if (StartWith(line, "vt"))
                     {
                         var vtStr = line.Substring(2).Trim();
                         var strs = SplitLine(vtStr);
                         var vt = new Vec2(double.Parse(strs[0]), double.Parse(strs[1]));
                         _model.Uvs.Add(vt);
                     }
-                    else if (StartWith(line, "g")) //(line.StartsWith("g ") || line.StartsWith("g\t"))
+                    else if (StartWith(line, "g"))
                     {
                         var gStr = line.Substring(1).Trim();
                         var g = new Geometry { Id = gStr };
                         _model.Geometries.Add(g);
                     }
-                    else if (StartWith(line, "usemtl")) //(line.StartsWith("usemtl ") || line.StartsWith("usemtl\t"))
+                    else if (StartWith(line, "usemtl"))
                     {
                         var umtl = line.Substring(6).Trim();
                         var g = GetGeometry();
                         var face = new Face { MatName = umtl };
                         g.Faces.Add(face);
                     }
-                    else if (StartWith(line, "f")) //(line.StartsWith("f ") || line.StartsWith("f\t"))
+                    else if (StartWith(line, "f"))
                     {
                         var fStr = line.Substring(1).Trim();
                         var g = GetGeometry();
                         Face face = GetFace(g);
                         var strs = SplitLine(fStr);
                         if (strs.Length < 3) continue; // ignore face that has less than 3 vertices
-
-                        var v1 = GetVertex(strs[0]);
-                        var v2 = GetVertex(strs[1]);
-                        var v3 = GetVertex(strs[2]);
-                        var f = new FaceTriangle(v1, v2, v3);
-                        face.Triangles.Add(f);
-                        if (strs.Length == 4)
+                        if (strs.Length == 3)
                         {
+                            var v1 = GetVertex(strs[0]);
+                            var v2 = GetVertex(strs[1]);
+                            var v3 = GetVertex(strs[2]);
+                            var f = new FaceTriangle(v1, v2, v3);
+                            face.Triangles.Add(f);
+                        }
+                        else if (strs.Length == 4)
+                        {
+                            var v1 = GetVertex(strs[0]);
+                            var v2 = GetVertex(strs[1]);
+                            var v3 = GetVertex(strs[2]);
+                            var f = new FaceTriangle(v1, v2, v3);
+                            face.Triangles.Add(f);
                             var v4 = GetVertex(strs[3]);
                             var ff = new FaceTriangle(v1, v3, v4);
                             face.Triangles.Add(ff);
                         }
-                        else if (strs.Length > 4)
+                        else //if (strs.Length > 4)
                         {
                             var points = new List<Vec3>();
                             for(var i = 0;i<strs.Length;i++)
@@ -170,6 +192,10 @@ namespace Arctron.Obj2Gltf.WaveFront
                             {
                                 var points2D = GeomUtil.CreateProjectPointsTo2DFunction(planeAxis, points);
                                 var indices = PolygonPipeline.Triangulate(points2D, null);
+                                if (indices.Length == 0)
+                                {
+                                    // TODO:
+                                }
                                 for(var i = 0; i < indices.Length-2;i+=3)
                                 {
                                     var vv1 = GetVertex(strs[indices[i]]);
@@ -179,18 +205,22 @@ namespace Arctron.Obj2Gltf.WaveFront
                                     face.Triangles.Add(ff);
                                 }
                             }
+                            else
+                            {
+                                // TODO:
+                            }
                         }
                     }
                     else
                     {
-                        var strs = SplitLine(line);
+                        //var strs = SplitLine(line);
                     }
                 }
                 if (!String.IsNullOrEmpty(_model.MatFilename))
                 {
                     var dir = Path.GetDirectoryName(_objFile);
                     var matFile = Path.Combine(dir, _model.MatFilename);
-                    using (var mtlParser = new MtlParser(matFile))
+                    using (var mtlParser = new MtlParser(matFile, _encoding))
                     {
                         var mats = mtlParser.GetMats();
                         _model.Materials.AddRange(mats);
@@ -201,6 +231,9 @@ namespace Arctron.Obj2Gltf.WaveFront
             return _model;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
             if (_reader != null)
