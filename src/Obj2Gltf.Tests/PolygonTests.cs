@@ -23,5 +23,19 @@ namespace Arctron.Obj2Gltf.Tests
             Assert.Equal(PolygonPointRes.Inside, PolygonUtil.CrossTest(new Vec2(0.5, 0.499999), pnts, tol));
             Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new Vec2(1.5, 0.5), pnts, tol));
         }
+
+        [Fact]
+        public void Test_BoundingBoxSplit()
+        {
+            var box = new BoundingBox
+            {
+                X = new MinMax { Min = 0, Max = 10 },
+                Y = new MinMax { Min = 0, Max = 10 },
+                Z = new MinMax { Min = 0, Max = 10 }
+            };
+
+            var boxes = box.Split(2);
+            Assert.Equal(8, boxes.Count);
+        }
     }
 }

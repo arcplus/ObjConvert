@@ -19,5 +19,18 @@ namespace Arctron.Obj2Gltf.Tests
                 Assert.True(model.Vertices.Count > 0);
             }
         }
+
+        [Fact]
+        public void Test_Split()
+        {
+            var objFile = @"..\..\..\..\testassets\Office\model.obj";
+            Assert.True(System.IO.File.Exists(objFile), "obj file does not exist!");
+            using (var parser = new ObjParser(objFile))
+            {
+                var model = parser.GetModel();
+                var models = model.Split(2);
+                Assert.True(models.Count > 0);
+            }
+        }
     }
 }

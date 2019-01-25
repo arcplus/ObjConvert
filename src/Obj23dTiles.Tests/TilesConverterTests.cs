@@ -249,6 +249,30 @@ namespace Arctron.Obj23dTiles.Tests
         }
 
         [Fact]
+        public void Test_SplitObj2Tilesets()
+        {
+            CheckObjFiles();
+            var outputDir = "splitobjmerge";
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+            var objParser = new Obj2Gltf.WaveFront.ObjParser(TestObjFile);
+            var objModel = objParser.GetModel();
+            var gisPosition = new GisPosition();
+            var lod = false;
+
+            var objModels = objModel.Split(2);
+
+            var objFolder = Path.GetDirectoryName(TestObjFile);
+            var tileConverter = new TilesConverter(objFolder, objModels,
+                gisPosition, new TilesOptions { OutputFolder = outputDir, MergeTileJsonFiles = true });
+            var tilesetJson = tileConverter.Run(lod);
+
+            Assert.True(File.Exists(tilesetJson));
+        }
+
+        [Fact]
         public void TestIntBytes()
         {
             var i = 1;
