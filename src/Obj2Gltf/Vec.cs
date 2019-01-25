@@ -149,6 +149,7 @@ namespace Arctron.Obj2Gltf
         {
             return new[] { X, Y, Z };
         }
+
     }
 
     public class BoundingBox

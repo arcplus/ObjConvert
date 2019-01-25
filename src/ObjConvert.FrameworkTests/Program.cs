@@ -12,9 +12,16 @@ namespace Arctron.ObjConvert.FrameworkTests
         
         static void Main(string[] args)
         {
-            Obj2GltfTests.TestConvert();
+            //Obj2GltfTests.TestConvert();
             //Test3dTile();
             //Test3dTiles();
+            TestSplitAndMerge();
+        }
+        static void TestSplitAndMerge()
+        {
+            var gisPosition = new GisPosition();
+            var mobjZipFile2 = @"test.objr";
+            Obj23dTilesTests.SplitObjAndMergeMTilesetsWithZip(mobjZipFile2, "test", gisPosition, 2);
         }
 
         static void Test3dTile()

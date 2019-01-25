@@ -61,7 +61,11 @@ namespace Arctron.Obj2Gltf.WaveFront
                 g.Write(writer);
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="level">will generate level^3 models</param>
+        /// <returns></returns>
         public List<ObjModel> Split(int level)
         {
             if (level <= 1)
@@ -115,40 +119,22 @@ namespace Arctron.Obj2Gltf.WaveFront
             return objModels;
         }
 
-        private static FaceVertex GetVertex(FaceVertex v, List<int> pnts, List<int> normals, List<int> uvs)
+        private static FaceVertex GetVertex(FaceVertex v, Dictionary<int, int> pnts, Dictionary<int, int> normals, Dictionary<int, int> uvs)
         {
             var v1p = v.V;
             var v1n = v.N;
             var v1t = v.T;
             if (v1p > 0)
             {
-                var index = pnts.IndexOf(v1p);
-                if (index == -1)
-                {
-                    index = pnts.Count;
-                    pnts.Add(v1p);
-                }
-                v1p = index+1;
+                v1p = pnts[v1p];
             }
             if (v1n > 0)
             {
-                var index = normals.IndexOf(v1n);
-                if (index == -1)
-                {
-                    index = normals.Count;
-                    normals.Add(v1n);
-                }
-                v1n = index+1;
+                v1n = normals[v1n];
             }
             if (v1t > 0)
             {
-                var index = uvs.IndexOf(v1t);
-                if (index == -1)
-                {
-                    index = uvs.Count;
-                    uvs.Add(v1t);
-                }
-                v1t = index+1;
+                v1t = uvs[v1t];
             }
             return new FaceVertex(v1p, v1t, v1n);
         }
@@ -159,11 +145,90 @@ namespace Arctron.Obj2Gltf.WaveFront
             foreach(var f in g.Faces)
             {
                 var ff = new Face { MatName = f.MatName };
+                var pntList = new List<int>();
+                var normList = new List<int>();
+                var uvList = new List<int>();
                 foreach(var t in f.Triangles)
                 {
-                    var v1 = GetVertex(t.V1, pnts, normals, uvs);
-                    var v2 = GetVertex(t.V2, pnts, normals, uvs);
-                    var v3 = GetVertex(t.V3, pnts, normals, uvs);
+                    var v1 = t.V1;
+                    if (!pntList.Contains(v1.V))
+                    {
+                        pntList.Add(v1.V);
+                    }
+                    if (v1.N > 0 && !normList.Contains(v1.N))
+                    {
+                        normList.Add(v1.N);
+                    }
+                    if (v1.T > 0 && !uvList.Contains(v1.T))
+                    {
+                        uvList.Add(v1.T);
+                    }
+                    var v2 = t.V2;
+                    if (!pntList.Contains(v2.V))
+                    {
+                        pntList.Add(v2.V);
+                    }
+                    if (v2.N > 0 && !normList.Contains(v2.N))
+                    {
+                        normList.Add(v2.N);
+                    }
+                    if (v2.T > 0 && !uvList.Contains(v2.T))
+                    {
+                        uvList.Add(v2.T);
+                    }
+                    var v3 = t.V3;
+                    if (!pntList.Contains(v3.V))
+                    {
+                        pntList.Add(v3.V);
+                    }
+                    if (v3.N > 0 && !normList.Contains(v3.N))
+                    {
+                        normList.Add(v3.N);
+                    }
+                    if (v3.T > 0 && !uvList.Contains(v3.T))
+                    {
+                        uvList.Add(v3.T);
+                    }
+                }
+                var pntDict = new Dictionary<int, int>();
+                foreach(var p in pntList)
+                {
+                    var index = pnts.IndexOf(p);
+                    if (index == -1)
+                    {
+                        index = pnts.Count;
+                        pnts.Add(p);
+                    }
+                    pntDict.Add(p, index + 1);
+                }
+                var normDict = new Dictionary<int, int>();
+                foreach(var n in normList)
+                {
+                    var index = normals.IndexOf(n);
+                    if (index == -1)
+                    {
+                        index = normals.Count;
+                        normals.Add(n);
+                    }
+                    normDict.Add(n, index + 1);
+                }
+                var uvDict = new Dictionary<int, int>();
+                foreach(var t in uvList)
+                {
+                    var index = uvs.IndexOf(t);
+                    if (index == -1)
+                    {
+                        index = uvs.Count;
+                        uvs.Add(t);
+                    }
+                    uvDict.Add(t, index + 1);
+                }
+
+                foreach(var t in f.Triangles)
+                {
+                    var v1 = GetVertex(t.V1, pntDict, normDict, uvDict);
+                    var v2 = GetVertex(t.V2, pntDict, normDict, uvDict);
+                    var v3 = GetVertex(t.V3, pntDict, normDict, uvDict);
                     var fv = new FaceTriangle(v1, v2, v3);
                     ff.Triangles.Add(fv);
                 }
@@ -190,27 +255,43 @@ namespace Arctron.Obj2Gltf.WaveFront
         private Vec3 GetCenter(Geometry g)
         {
             var ps = new List<int>();
-            foreach(var f in g.Faces)
+            var sumX = 0.0;
+            var sumY = 0.0;
+            var sumZ = 0.0;
+            foreach (var f in g.Faces)
             {
                 foreach(var t in f.Triangles)
                 {
                     if (!ps.Contains(t.V1.V))
                     {
+                        var v = Vertices[t.V1.V-1];
+                        sumX += v.X;
+                        sumY += v.Y;
+                        sumZ += v.Z;
                         ps.Add(t.V1.V);
                     }
                     if (!ps.Contains(t.V2.V))
                     {
+                        var v = Vertices[t.V2.V - 1];
+                        sumX += v.X;
+                        sumY += v.Y;
+                        sumZ += v.Z;
                         ps.Add(t.V2.V);
                     }
                     if (!ps.Contains(t.V3.V))
                     {
+                        var v = Vertices[t.V3.V - 1];
+                        sumX += v.X;
+                        sumY += v.Y;
+                        sumZ += v.Z;
                         ps.Add(t.V3.V);
                     }
                 }
             }
-            var x = ps.Select(c => Vertices[c - 1].X).Average();
-            var y = ps.Select(c => Vertices[c - 1].Y).Average();
-            var z = ps.Select(c => Vertices[c - 1].Z).Average();
+            
+            var x = sumX / ps.Count;
+            var y = sumY / ps.Count;
+            var z = sumZ / ps.Count;
             return new Vec3(x, y, z);
         }
 

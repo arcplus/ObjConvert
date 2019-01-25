@@ -122,8 +122,41 @@ namespace Arctron.ObjConvert.FrameworkTests
             //var tilesetJson = Utility.MergeTilesets(outputDir, gisPosition, true, objFiles);
             //return tilesetJson;
         }
-        
 
+        public static string SplitObjAndMergeMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition, int splitLevel = 2)
+        {
+            var name = Path.GetFileNameWithoutExtension(objZipFile);
+            var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
+            if (Directory.Exists(unzipDir))
+            {
+                Directory.Delete(unzipDir, true);
+            }
+            Directory.CreateDirectory(unzipDir);
+            try
+            {
+                ExtractZipFile(objZipFile, unzipDir);
+                var objFile = Path.Combine(unzipDir, "model.obj");
+                if (!File.Exists(objFile))
+                {
+                    objFile = Path.Combine(unzipDir, name + ".obj");
+                }
+                if (!File.Exists(objFile))
+                {
+                    throw new FileNotFoundException("Obj file not found", objFile);
+                }
+                var tilesOpts = new TilesOptions { MergeTileJsonFiles = true, OutputFolder = outputDir, WriteChildTileJson = false };
+                var objParser = new Obj2Gltf.WaveFront.ObjParser(objFile);
+                var objModel = objParser.GetModel();
+                var objModels = objModel.Split(splitLevel);
+                var tilesConverter = new TilesConverter(unzipDir, objModels, gisPosition, tilesOpts);
+                return tilesConverter.Run();
+            }
+            finally
+            {
+                Directory.Delete(unzipDir, true);
+            }
+
+        }
 
         public static void ExtractZipFile(string archiveFilenameIn, string outFolder)
         {

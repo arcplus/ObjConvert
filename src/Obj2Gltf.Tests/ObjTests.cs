@@ -8,10 +8,10 @@ namespace Arctron.Obj2Gltf.Tests
 {
     public class ObjTests
     {
+        static string objFile = @"..\..\..\..\testassets\Office\model.obj";
         [Fact]
         public void Test_LoadObj()
         {
-            var objFile = @"..\..\..\..\testassets\Office\model.obj";
             Assert.True(System.IO.File.Exists(objFile), "obj file does not exist!");
             using (var parser = new ObjParser(objFile))
             {
@@ -23,7 +23,7 @@ namespace Arctron.Obj2Gltf.Tests
         [Fact]
         public void Test_Split()
         {
-            var objFile = @"..\..\..\..\testassets\Office\model.obj";
+            objFile = @"C:\Users\23105\Desktop\RevitModels\6F\model.obj";
             Assert.True(System.IO.File.Exists(objFile), "obj file does not exist!");
             using (var parser = new ObjParser(objFile))
             {
