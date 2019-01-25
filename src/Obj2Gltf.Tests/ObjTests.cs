@@ -23,7 +23,6 @@ namespace Arctron.Obj2Gltf.Tests
         [Fact]
         public void Test_Split()
         {
-            objFile = @"C:\Users\23105\Desktop\RevitModels\6F\model.obj";
             Assert.True(System.IO.File.Exists(objFile), "obj file does not exist!");
             using (var parser = new ObjParser(objFile))
             {

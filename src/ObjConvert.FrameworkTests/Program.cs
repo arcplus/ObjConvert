@@ -20,8 +20,8 @@ namespace Arctron.ObjConvert.FrameworkTests
         static void TestSplitAndMerge()
         {
             var gisPosition = new GisPosition();
-            var mobjZipFile2 = @"test.objr";
-            Obj23dTilesTests.SplitObjAndMergeMTilesetsWithZip(mobjZipFile2, "test", gisPosition, 2);
+            var mobjZipFile2 = @"testsplitmerge.objr";
+            Obj23dTilesTests.SplitObjAndMergeMTilesetsWithZip(mobjZipFile2, "testsplitmerge", gisPosition, 2);
         }
 
         static void Test3dTile()

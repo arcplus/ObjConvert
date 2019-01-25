@@ -78,7 +78,7 @@ namespace Arctron.Obj2Gltf.WaveFront
             var pnts = new List<int>[boxes.Count];
             var normals = new List<int>[boxes.Count];
             var uvs = new List<int>[boxes.Count];
-            for(var i = 0;i<geoes.Length;i++)
+            for (var i = 0; i < geoes.Length; i++)
             {
                 geoes[i] = new List<Geometry>();
                 pnts[i] = new List<int>();
@@ -87,15 +87,17 @@ namespace Arctron.Obj2Gltf.WaveFront
             }
             foreach(var g in Geometries)
             {
-                var index = GetBoxIndex(g, boxes);
-                var gg = AddGeo(g, pnts[index], normals[index], uvs[index]);
+                var geoBox = GetBoxIndex(g, boxes);
+                var index = geoBox.Index;
+                var gg = AddGeo(g, geoBox, pnts[index], normals[index], uvs[index]);
                 geoes[index].Add(gg);
             }
             var objModels = new List<ObjModel>();
             for(var i = 0;i< geoes.Length;i++)
             {
                 if (geoes[i].Count == 0) continue;
-                var m = new ObjModel { Geometries = geoes[i], Name = Name + "_" + objModels.Count, MatFilename = MatFilename, Materials = Materials };
+                var m = new ObjModel { Geometries = geoes[i], Name = Name + "_" + objModels.Count,
+                    MatFilename = MatFilename, Materials = Materials };
                 if (m.Vertices == null) m.Vertices = new List<Vec3>();
                 var ps = pnts[i];
                 foreach(var v in ps)
@@ -119,7 +121,8 @@ namespace Arctron.Obj2Gltf.WaveFront
             return objModels;
         }
 
-        private static FaceVertex GetVertex(FaceVertex v, Dictionary<int, int> pnts, Dictionary<int, int> normals, Dictionary<int, int> uvs)
+        private static FaceVertex GetVertex(FaceVertex v, Dictionary<int, int> pnts, 
+            Dictionary<int, int> normals, Dictionary<int, int> uvs)
         {
             var v1p = v.V;
             var v1n = v.N;
@@ -139,92 +142,109 @@ namespace Arctron.Obj2Gltf.WaveFront
             return new FaceVertex(v1p, v1t, v1n);
         }
 
-        private Geometry AddGeo(Geometry g, List<int> pnts, List<int> normals, List<int> uvs)
+        private Geometry AddGeo(Geometry g, GeomBox box, 
+            List<int> pnts, List<int> normals, List<int> uvs)
         {
             var gg = new Geometry { Id = g.Id };
-            foreach(var f in g.Faces)
-            {
-                var ff = new Face { MatName = f.MatName };
-                var pntList = new List<int>();
-                var normList = new List<int>();
-                var uvList = new List<int>();
-                foreach(var t in f.Triangles)
-                {
-                    var v1 = t.V1;
-                    if (!pntList.Contains(v1.V))
-                    {
-                        pntList.Add(v1.V);
-                    }
-                    if (v1.N > 0 && !normList.Contains(v1.N))
-                    {
-                        normList.Add(v1.N);
-                    }
-                    if (v1.T > 0 && !uvList.Contains(v1.T))
-                    {
-                        uvList.Add(v1.T);
-                    }
-                    var v2 = t.V2;
-                    if (!pntList.Contains(v2.V))
-                    {
-                        pntList.Add(v2.V);
-                    }
-                    if (v2.N > 0 && !normList.Contains(v2.N))
-                    {
-                        normList.Add(v2.N);
-                    }
-                    if (v2.T > 0 && !uvList.Contains(v2.T))
-                    {
-                        uvList.Add(v2.T);
-                    }
-                    var v3 = t.V3;
-                    if (!pntList.Contains(v3.V))
-                    {
-                        pntList.Add(v3.V);
-                    }
-                    if (v3.N > 0 && !normList.Contains(v3.N))
-                    {
-                        normList.Add(v3.N);
-                    }
-                    if (v3.T > 0 && !uvList.Contains(v3.T))
-                    {
-                        uvList.Add(v3.T);
-                    }
-                }
-                var pntDict = new Dictionary<int, int>();
-                foreach(var p in pntList)
-                {
-                    var index = pnts.IndexOf(p);
-                    if (index == -1)
-                    {
-                        index = pnts.Count;
-                        pnts.Add(p);
-                    }
-                    pntDict.Add(p, index + 1);
-                }
-                var normDict = new Dictionary<int, int>();
-                foreach(var n in normList)
-                {
-                    var index = normals.IndexOf(n);
-                    if (index == -1)
-                    {
-                        index = normals.Count;
-                        normals.Add(n);
-                    }
-                    normDict.Add(n, index + 1);
-                }
-                var uvDict = new Dictionary<int, int>();
-                foreach(var t in uvList)
-                {
-                    var index = uvs.IndexOf(t);
-                    if (index == -1)
-                    {
-                        index = uvs.Count;
-                        uvs.Add(t);
-                    }
-                    uvDict.Add(t, index + 1);
-                }
 
-                foreach(var t in f.Triangles)
+            var pntList = box.Pnts; // new List<int>(); // 
+            var normList = box.Norms; // new List<int>(); // 
+            var uvList = box.Uvs; // new List<int>(); // 
+
+            //if (pntList.Count == 0)
+            //{
+            //    foreach (var f in g.Faces)
+            //    {
+            //        foreach (var t in f.Triangles)
+            //        {
+            //            var v1 = t.V1;
+            //            if (!pntList.Contains(v1.V))
+            //            {
+            //                pntList.Add(v1.V);
+            //            }
+            //            if (v1.N > 0 && !normList.Contains(v1.N))
+            //            {
+            //                normList.Add(v1.N);
+            //            }
+            //            if (v1.T > 0 && !uvList.Contains(v1.T))
+            //            {
+            //                uvList.Add(v1.T);
+            //            }
+            //            var v2 = t.V2;
+            //            if (!pntList.Contains(v2.V))
+            //            {
+            //                pntList.Add(v2.V);
+            //            }
+            //            if (v2.N > 0 && !normList.Contains(v2.N))
+            //            {
+            //                normList.Add(v2.N);
+            //            }
+            //            if (v2.T > 0 && !uvList.Contains(v2.T))
+            //            {
+            //                uvList.Add(v2.T);
+            //            }
+            //            var v3 = t.V3;
+            //            if (!pntList.Contains(v3.V))
+            //            {
+            //                pntList.Add(v3.V);
+            //            }
+            //            if (v3.N > 0 && !normList.Contains(v3.N))
+            //            {
+            //                normList.Add(v3.N);
+            //            }
+            //            if (v3.T > 0 && !uvList.Contains(v3.T))
+            //            {
+            //                uvList.Add(v3.T);
+            //            }
+            //        }
+
+            //    }
+            //}
+            
+
+            var pntDict = new Dictionary<int, int>();
+            var normDict = new Dictionary<int, int>();
+            var uvDict = new Dictionary<int, int>();
+
+            foreach (var p in pntList)
+            {
+                var index = pnts.IndexOf(p);
+                if (index == -1)
+                {
+                    index = pnts.Count;
+                    pnts.Add(p);
+                }
+                pntDict.Add(p, index + 1);
+            }
+
+            foreach (var n in normList)
+            {
+                var index = normals.IndexOf(n);
+                if (index == -1)
+                {
+                    index = normals.Count;
+                    normals.Add(n);
+                }
+                normDict.Add(n, index + 1);
+            }
+
+            foreach (var t in uvList)
+            {
+                var index = uvs.IndexOf(t);
+                if (index == -1)
+                {
+                    index = uvs.Count;
+                    uvs.Add(t);
+                }
+                uvDict.Add(t, index + 1);
+            }
+
+
+            foreach (var f in g.Faces)
+            {
+                var ff = new Face { MatName = f.MatName };                
+
+                foreach (var t in f.Triangles)
                 {
                     var v1 = GetVertex(t.V1, pntDict, normDict, uvDict);
                     var v2 = GetVertex(t.V2, pntDict, normDict, uvDict);
@@ -239,22 +259,38 @@ namespace Arctron.Obj2Gltf.WaveFront
             return gg;
         }
 
-        private int GetBoxIndex(Geometry g, IList<BoundingBox> boxes)
+        class GeomBox
+        {
+            public int Index { get; set; } = -1;
+
+            public Vec3 Center { get; set; }
+
+            public SortedSet<int> Pnts { get; set; }
+
+            public SortedSet<int> Norms { get; set; }
+
+            public SortedSet<int> Uvs { get; set; }
+        }
+
+        private GeomBox GetBoxIndex(Geometry g, IList<BoundingBox> boxes)
         {
             var gCenter = GetCenter(g);
             for(var i = 0;i<boxes.Count;i++)
             {
-                if (boxes[i].IsIn(gCenter))
+                if (boxes[i].IsIn(gCenter.Center))
                 {
-                    return i;
+                    gCenter.Index = i;
+                    return gCenter;
                 }
             }
-            return -1;
+            return gCenter;
         }
 
-        private Vec3 GetCenter(Geometry g)
+        private GeomBox GetCenter(Geometry g)
         {
-            var ps = new List<int>();
+            var ps = new SortedSet<int>();
+            var ns = new SortedSet<int>();
+            var ts = new SortedSet<int>();
             var sumX = 0.0;
             var sumY = 0.0;
             var sumZ = 0.0;
@@ -269,7 +305,7 @@ namespace Arctron.Obj2Gltf.WaveFront
                         sumY += v.Y;
                         sumZ += v.Z;
                         ps.Add(t.V1.V);
-                    }
+                    }                    
                     if (!ps.Contains(t.V2.V))
                     {
                         var v = Vertices[t.V2.V - 1];
@@ -277,7 +313,7 @@ namespace Arctron.Obj2Gltf.WaveFront
                         sumY += v.Y;
                         sumZ += v.Z;
                         ps.Add(t.V2.V);
-                    }
+                    }                    
                     if (!ps.Contains(t.V3.V))
                     {
                         var v = Vertices[t.V3.V - 1];
@@ -286,13 +322,46 @@ namespace Arctron.Obj2Gltf.WaveFront
                         sumZ += v.Z;
                         ps.Add(t.V3.V);
                     }
+
+
+                    if (t.V1.N > 0 && !ns.Contains(t.V1.N))
+                    {
+                        ns.Add(t.V1.N);
+                    }
+                    if (t.V1.T > 0 && !ts.Contains(t.V1.T))
+                    {
+                        ts.Add(t.V1.T);
+                    }
+                    if (t.V2.N > 0 && !ns.Contains(t.V2.N))
+                    {
+                        ns.Add(t.V2.N);
+                    }
+                    if (t.V2.T > 0 && !ts.Contains(t.V2.T))
+                    {
+                        ts.Add(t.V2.T);
+                    }
+                    if (t.V3.N > 0 && !ns.Contains(t.V3.N))
+                    {
+                        ns.Add(t.V3.N);
+                    }
+                    if (t.V3.T > 0 && !ts.Contains(t.V3.T))
+                    {
+                        ts.Add(t.V3.T);
+                    }
+
                 }
             }
             
             var x = sumX / ps.Count;
             var y = sumY / ps.Count;
             var z = sumZ / ps.Count;
-            return new Vec3(x, y, z);
+            return new GeomBox
+            {
+                Center = new Vec3(x, y, z),
+                Pnts = ps,
+                Norms = ns,
+                Uvs = ts
+            };
         }
 
         public BoundingBox GetBounding()
