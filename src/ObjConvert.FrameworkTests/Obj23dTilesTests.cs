@@ -145,11 +145,14 @@ namespace Arctron.ObjConvert.FrameworkTests
                     throw new FileNotFoundException("Obj file not found", objFile);
                 }
                 var tilesOpts = new TilesOptions { MergeTileJsonFiles = true, OutputFolder = outputDir, WriteChildTileJson = false };
-                var objParser = new Obj2Gltf.WaveFront.ObjParser(objFile);
-                var objModel = objParser.GetModel();
-                var objModels = objModel.Split(splitLevel);
-                var tilesConverter = new TilesConverter(unzipDir, objModels, gisPosition, tilesOpts);
-                return tilesConverter.Run();
+                using (var objParser = new Obj2Gltf.WaveFront.ObjParser(objFile))
+                {
+                    var objModel = objParser.GetModel();
+                    var objModels = objModel.Split(splitLevel);
+                    var tilesConverter = new TilesConverter(unzipDir, objModels, gisPosition, tilesOpts);
+                    return tilesConverter.Run();
+                }
+                    
             }
             finally
             {
