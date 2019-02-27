@@ -13,6 +13,8 @@ namespace Arctron.Obj23dTiles.Tests
     {
         private static string TestObjFile = @"..\..\..\..\testassets\Office\model.obj";
 
+        private static string MOfficeFolder = @"..\..\..\..\testassets\mOffice";
+
         static void CheckObjFiles()
         {
             Assert.True(File.Exists(TestObjFile), "Obj File does not exist!");
@@ -98,11 +100,13 @@ namespace Arctron.Obj23dTiles.Tests
                 }
             }
         }
-
+        /// <summary>
+        /// zip file should only contain one obj file
+        /// </summary>
         [Fact]
         public void Test_BatchTileset()
         {
-            var folder = @"TestObjs";
+            var folder = @"..\..\..\..\testassets\BatchTests";
             Assert.True(Directory.Exists(folder), "Input folder does not exist!");
             var outputDir = "BatchTests";
             var files = Directory.GetFiles(folder); // obj Files are zipped with mtl files
@@ -157,7 +161,7 @@ namespace Arctron.Obj23dTiles.Tests
         public void Test_CombineTilesets()
         {
             var name = "test";
-            var objFolder = @"TestObjsFolder";
+            var objFolder = MOfficeFolder;
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
             var outputDir = name; //"mtileset";
             if (!Directory.Exists(outputDir))
@@ -176,7 +180,7 @@ namespace Arctron.Obj23dTiles.Tests
         public void Test_CombineTilesets2()
         {
             var name = "combinetest2";
-            var objFolder = @"TestObjsFolder";
+            var objFolder = MOfficeFolder;
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
             var outputDir = name; //"mtileset";
             if (!Directory.Exists(outputDir))
@@ -204,7 +208,7 @@ namespace Arctron.Obj23dTiles.Tests
         public void Test_MergeTilesets()
         {
             var name = "mergetest";
-            var objFolder = @"TestObjsFolder";
+            var objFolder = MOfficeFolder;
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
             var outputDir = name;
             if (!Directory.Exists(outputDir))
@@ -222,7 +226,7 @@ namespace Arctron.Obj23dTiles.Tests
         public void Test_MergeTilesets2()
         {
             var name = "mergetest2";
-            var objFolder = @"TestObjsFolder";
+            var objFolder = MOfficeFolder;
             Assert.True(Directory.Exists(objFolder), "Input Folder does not exist!");
             var outputDir = name;
             if (!Directory.Exists(outputDir))

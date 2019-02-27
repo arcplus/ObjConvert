@@ -9,7 +9,7 @@ namespace Arctron.Obj2Gltf.Tests
         [Fact]
         public void LoadMtl_Test()
         {
-            var mtlFile = @"..\..\..\assets\Office\model.mtl";
+            var mtlFile = @"..\..\..\..\testassets\Office\model.mtl";
             Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
             using (var mtlParser = new MtlParser(mtlFile))
             {
