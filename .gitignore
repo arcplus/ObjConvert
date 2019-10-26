@@ -264,3 +264,6 @@ __pycache__/
 # ignore gltf files
 *.gltf
 *.glb
+
+!/src/testassets/
+!/src/testassets/**/*
