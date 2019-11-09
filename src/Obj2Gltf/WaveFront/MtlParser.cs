@@ -15,15 +15,12 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         private Encoding _encoding;
 
-        private List<Material> _mats = new List<Material>();
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mtlFile">material file</param>
         public MtlParser(string mtlFile):this(mtlFile, InitEncoding(mtlFile))
         {
-            var encoding = InitEncoding(mtlFile);
-            _reader = new StreamReader(mtlFile, encoding);
         }
         /// <summary>
         /// 
@@ -38,7 +35,8 @@ namespace Arctron.Obj2Gltf.WaveFront
             {
                 encoding = Encoding.UTF8;
             }
-            _reader = new StreamReader(mtlFile, encoding);
+            _encoding = encoding;
+            _reader = new StreamReader(mtlFile, _encoding);
         }
 
         internal static Encoding InitEncoding(string mtlFile)
@@ -130,111 +128,109 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <returns></returns>
         public ICollection<Material> GetMats()
         {
-            if (_mats.Count == 0)
+            var mats = new List<Material>();
+            var matStrs = new List<List<string>>();
+            while(!_reader.EndOfStream)
             {
-                var matStrs = new List<List<string>>();
-                while(!_reader.EndOfStream)
+                var line = _reader.ReadLine().Trim();
+                if (line.StartsWith("newmtl"))
                 {
-                    var line = _reader.ReadLine().Trim();
-                    if (line.StartsWith("newmtl"))
-                    {
-                        matStrs.Add(new List<string> { line });
-                    }
-                    else if (matStrs.Count > 0)
-                    {
-                        matStrs[matStrs.Count - 1].Add(line);
-                    }
+                    matStrs.Add(new List<string> { line });
                 }
-                foreach(var matS in matStrs)
+                else if (matStrs.Count > 0)
                 {
-                    var m = new Material();
-                    foreach(var line in matS)
-                    {
-                        if (line.StartsWith("newmtl"))
-                        {
-                            var matName = line.Substring("newmtl".Length).Trim();
-                            m.Name = matName;
-                        }
-                        else if (line.StartsWith("Ka"))
-                        {
-                            var ka = line.Substring("Ka".Length).Trim();
-                            var r = GetReflectivity(ka);
-                            if (r != null)
-                            {
-                                m.Ambient = r;
-                            }
-                        }
-                        else if (line.StartsWith("Kd"))
-                        {
-                            var kd = line.Substring("Kd".Length).Trim();
-                            var r = GetReflectivity(kd);
-                            if (r != null)
-                            {
-                                m.Diffuse = r;
-                            }
-                        }
-                        else if (line.StartsWith("Ks"))
-                        {
-                            var ks = line.Substring("Ks".Length).Trim();
-                            var r = GetReflectivity(ks);
-                            if (r != null)
-                            {
-                                m.Specular = r;
-                            }
-                        }
-                        else if (line.StartsWith("Ke"))
-                        {
-                            var ks = line.Substring("Ke".Length).Trim();
-                            var r = GetReflectivity(ks);
-                            if (r != null)
-                            {
-                                m.Emissive = r;
-                            }
-                        }
-                        else if (line.StartsWith("d"))
-                        {
-                            var d = line.Substring("d".Length).Trim();
-                            m.Dissolve = GetDissolve(d);
-                        }
-                        else if (line.StartsWith("Tr"))
-                        {
-                            var tr = line.Substring("Tr".Length).Trim();
-                            m.Transparency = GetTransparency(tr);
-                        }
-                        else if (line.StartsWith("Ns"))
-                        {
-                            var ns = line.Substring("Ns".Length).Trim();
-                            if (ns.Contains("."))
-                            {
-                                var d = float.Parse(ns);
-                                m.SpecularExponent = (int)Math.Round(d);
-                            }
-                            else
-                            {
-                                m.SpecularExponent = int.Parse(ns);
-                            }                           
-                        }
-                        else if (line.StartsWith("map_Ka"))
-                        {
-                            var ma = line.Substring("map_Ka".Length).Trim();
-                            if (File.Exists(Path.Combine(_parentFolder, ma)))
-                            {
-                                m.AmbientTextureFile = ma;
-                            }
-                        }
-                        else if (line.StartsWith("map_Kd"))
-                        {
-                            var md = line.Substring("map_Kd".Length).Trim();
-                            if (File.Exists(Path.Combine(_parentFolder, md)))
-                            {
-                                m.DiffuseTextureFile = md;
-                            }
-                        }
-                    }
-                    _mats.Add(m);
+                    matStrs[matStrs.Count - 1].Add(line);
                 }
             }
-            return _mats;
+            foreach(var matS in matStrs)
+            {
+                var m = new Material();
+                foreach(var line in matS)
+                {
+                    if (line.StartsWith("newmtl"))
+                    {
+                        var matName = line.Substring("newmtl".Length).Trim();
+                        m.Name = matName;
+                    }
+                    else if (line.StartsWith("Ka"))
+                    {
+                        var ka = line.Substring("Ka".Length).Trim();
+                        var r = GetReflectivity(ka);
+                        if (r != null)
+                        {
+                            m.Ambient = r;
+                        }
+                    }
+                    else if (line.StartsWith("Kd"))
+                    {
+                        var kd = line.Substring("Kd".Length).Trim();
+                        var r = GetReflectivity(kd);
+                        if (r != null)
+                        {
+                            m.Diffuse = r;
+                        }
+                    }
+                    else if (line.StartsWith("Ks"))
+                    {
+                        var ks = line.Substring("Ks".Length).Trim();
+                        var r = GetReflectivity(ks);
+                        if (r != null)
+                        {
+                            m.Specular = r;
+                        }
+                    }
+                    else if (line.StartsWith("Ke"))
+                    {
+                        var ks = line.Substring("Ke".Length).Trim();
+                        var r = GetReflectivity(ks);
+                        if (r != null)
+                        {
+                            m.Emissive = r;
+                        }
+                    }
+                    else if (line.StartsWith("d"))
+                    {
+                        var d = line.Substring("d".Length).Trim();
+                        m.Dissolve = GetDissolve(d);
+                    }
+                    else if (line.StartsWith("Tr"))
+                    {
+                        var tr = line.Substring("Tr".Length).Trim();
+                        m.Transparency = GetTransparency(tr);
+                    }
+                    else if (line.StartsWith("Ns"))
+                    {
+                        var ns = line.Substring("Ns".Length).Trim();
+                        if (ns.Contains("."))
+                        {
+                            var d = float.Parse(ns);
+                            m.SpecularExponent = (int)Math.Round(d);
+                        }
+                        else
+                        {
+                            m.SpecularExponent = int.Parse(ns);
+                        }                           
+                    }
+                    else if (line.StartsWith("map_Ka"))
+                    {
+                        var ma = line.Substring("map_Ka".Length).Trim();
+                        if (File.Exists(Path.Combine(_parentFolder, ma)))
+                        {
+                            m.AmbientTextureFile = ma;
+                        }
+                    }
+                    else if (line.StartsWith("map_Kd"))
+                    {
+                        var md = line.Substring("map_Kd".Length).Trim();
+                        if (File.Exists(Path.Combine(_parentFolder, md)))
+                        {
+                            m.DiffuseTextureFile = md;
+                        }
+                    }
+                }
+                mats.Add(m);
+            }
+            return mats;
         }
 
         public void Dispose()
